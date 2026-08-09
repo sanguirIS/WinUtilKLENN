@@ -68,7 +68,7 @@ The `:RESIZE` routine runs on startup and after every screen. Verify it by:
 powershell -NoProfile -Command "$ui=(Get-Host).UI.RawUI; $ui.MaxWindowSize"
 ```
 
-The window must never exceed `68` columns (hard cap) or the screen maximum, whichever is smaller. The window height auto-fits the screen up to `50` rows, and the buffer stays at `9000` rows.
+The window must never exceed `68` columns (hard cap) or the screen maximum, whichever is smaller. The window height auto-fits the screen up to `50` rows, and the buffer height is set to match the window (no scrollback beyond the visible area).
 
 ## Code style
 

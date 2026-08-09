@@ -1,14 +1,14 @@
-# WinUtilKLENN v2.4.2
+# WinUtilKLENN v2.4.3
 
 Diagnostics and guided repair tools for Windows 10 / 11 — a single-file batch
 utility, no installation required.
 
-## What's new in v2.4.2
+## What's new in v2.4.3
 
-- **Taller auto-fit window** — the window height cap is raised from 40 to 50
-  rows, so the console fills more of a tall screen. The width cap stays at 68
-  columns (the 66-char menu border still never wraps) and the 9000-row buffer
-  is unchanged.
+- **Buffer matches the window** — the screen buffer height is now 50 rows
+  (the same as the window height) instead of 9000, so scrollback mirrors the
+  visible window exactly. Width stays at 68 columns and the window height cap
+  stays at 50 rows.
 
 ## What it does
 

@@ -65,7 +65,7 @@ Option 15 walks you through, step by step:
 
 - **Self-elevation** — if not running as Administrator, the script restarts itself elevated through UAC. If you cancel the prompt, no changes are made.
 - **Logging** — every repair action, plus the applied console window size, is appended to `%ProgramData%\WinUtilKLENN\WinUtilKLENN.log`.
-- **Auto-sizing console** — the window grows to the largest size that fits your screen and console font (capped at 68×50, 9000-row buffer). It re-applies on every screen so the 66-character border never wraps.
+- **Auto-sizing console** — the window grows to the largest size that fits your screen and console font (capped at 68×50, buffer matches the window). It re-applies on every screen so the 66-character border never wraps.
 
 ## Third-party tools & websites (and their licenses)
 
@@ -95,6 +95,9 @@ WinUtilKLENN performs actions that change system configuration (services, driver
 By using WinUtilKLENN you agree that you are responsible for your own system.
 
 ## Changelog
+
+### v2.4.3 — Buffer matches the window
+- Screen buffer height is now 50 rows (same as the window height) instead of 9000, so scrollback mirrors the visible window exactly.
 
 ### v2.4.2 — Resize tuning
 - Window height cap raised from 40 to 50 rows so the window auto-fits more of a tall screen. Width cap stays at 68 columns; the 9000-row buffer is unchanged.
@@ -131,7 +134,7 @@ See [PUBLISHING.md](PUBLISHING.md) for step-by-step instructions to create the G
 
 ## Releasing a new version
 
-Follow this checklist for every new version (e.g. `v2.4.2`):
+Follow this checklist for every new version (e.g. `v2.4.3`):
 
 1. **Bump the version** in `WinUtilKLENN.cmd` — in all three places:
    - the header comment: `rem  WINUTILKLENN   (vX.Y.Z)`

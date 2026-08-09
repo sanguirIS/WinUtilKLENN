@@ -22,11 +22,15 @@ title WinUtilKLENN
 color 0F
 
 rem ================================================================
-rem  WINUTILKLENN   (v2.4.2)
+rem  WINUTILKLENN   (v2.4.3)
 rem  Diagnostics and guided repair tools for Windows 10 / 11.
 rem  Run as Administrator for full functionality.
 rem ================================================================
 rem  CHANGELOG
+rem  v2.4.3 - Buffer height matches the window:
+rem         - Screen buffer height is now 50 rows (the same as the
+rem           window height) instead of 9000, so scrollback mirrors
+rem           the visible window exactly.
 rem  v2.4.2 - Resize tuning:
 rem         - Window height cap raised from 40 to 50 rows so the
 rem           window auto-fits more of a tall screen. Width cap stays
@@ -139,7 +143,7 @@ call :RESIZE
 echo.
 echo  %RULE_BIG%
 echo  %BOLD%%BWHT%   WINUTILKLENN%R%
-echo  %BCYN%      Diagnostics and Repair  %SYM_BULLET%  Windows 10 / 11  [ v2.4.2 ]%R%
+echo  %BCYN%      Diagnostics and Repair  %SYM_BULLET%  Windows 10 / 11  [ v2.4.3 ]%R%
 echo  %RULE_BIG%
 echo.
 echo  %BOLD%%CYN%  MEDIA%R%
@@ -766,7 +770,7 @@ rem  scrollbar appears. Falls back silently if the host cannot be
 rem  resized (e.g. some Windows Terminal configurations). The applied
 rem  size is logged to %LOGFILE% on every call (i.e. on each screen).
 :RESIZE
-powershell.exe -NoProfile -Command "try { $ui=(Get-Host).UI.RawUI; $max=$ui.MaxWindowSize; $wW=[Math]::Min(68,$max.Width); $wH=[Math]::Min(50,$max.Height); $b=$ui.BufferSize; if($b.Width -lt $wW){ $b.Width=$wW; $b.Height=9000; $ui.BufferSize=$b }; $w=$ui.WindowSize; $w.Width=$wW; $w.Height=$wH; $ui.WindowSize=$w; $b=$ui.BufferSize; $b.Width=$wW; $b.Height=9000; $ui.BufferSize=$b; $ws=$ui.WindowSize; Add-Content -LiteralPath '%LOGFILE%' -Value ('[{0}] Window size applied: {1}x{2}' -f (Get-Date -Format 'MM/dd/yyyy HH:mm:ss'), $ws.Width, $ws.Height) } catch {}" >nul 2>&1
+powershell.exe -NoProfile -Command "try { $ui=(Get-Host).UI.RawUI; $max=$ui.MaxWindowSize; $wW=[Math]::Min(68,$max.Width); $wH=[Math]::Min(50,$max.Height); $b=$ui.BufferSize; if($b.Width -lt $wW){ $b.Width=$wW; $b.Height=50; $ui.BufferSize=$b }; $w=$ui.WindowSize; $w.Width=$wW; $w.Height=$wH; $ui.WindowSize=$w; $b=$ui.BufferSize; $b.Width=$wW; $b.Height=50; $ui.BufferSize=$b; $ws=$ui.WindowSize; Add-Content -LiteralPath '%LOGFILE%' -Value ('[{0}] Window size applied: {1}x{2}' -f (Get-Date -Format 'MM/dd/yyyy HH:mm:ss'), $ws.Width, $ws.Height) } catch {}" >nul 2>&1
 goto :eof
 
 :HEADER
