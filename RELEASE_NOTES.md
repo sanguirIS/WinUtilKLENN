@@ -1,14 +1,16 @@
-# WinUtilKLENN v2.4.3
+# WinUtilKLENN v2.5.0
 
 Diagnostics and guided repair tools for Windows 10 / 11 — a single-file batch
 utility, no installation required.
 
-## What's new in v2.4.3
+## What's new in v2.5.0
 
-- **Buffer matches the window** — the screen buffer height is now 50 rows
-  (the same as the window height) instead of 9000, so scrollback mirrors the
-  visible window exactly. Width stays at 68 columns and the window height cap
-  stays at 50 rows.
+- **Polish pass** — no new menu options in this release:
+  - Option 11 label shortened to "BITS" so it matches its screen header and
+    the section title.
+  - Log-path line spacing unified across screens.
+  - Window behaviour unchanged: 68-column cap, 50-row window, buffer matches
+    the window (50 rows).
 
 ## What it does
 

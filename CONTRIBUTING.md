@@ -86,7 +86,7 @@ The console is capped at **68 columns**. Keep every echoed line short enough to 
 
 ### 4. Structure
 
-- Section banners use the `rem ====...====` style; keep the header comment's `WINUTILKLENN (vX.Y)` in sync.
+- Section banners use the `rem ====...====` style; keep the header comment's `WINUTILKLENN (vX.Y.Z)` in sync.
 - Use small `:SUBROUTINE` helpers with `goto :eof` (see `:HEADER`, `:SVCSTATUS`, `:CHECKSVC`, `:RESIZE`) instead of duplicating logic.
 - Prefix subroutine-local variables (e.g. `SVC*`, `GFX_*`, `WINUTIL_*`) and `set "VAR="` before use.
 - Never put `goto`/labels inside parenthesised blocks; keep `call :HELPER` calls at the top level of each screen.

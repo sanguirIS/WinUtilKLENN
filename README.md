@@ -96,6 +96,9 @@ By using WinUtilKLENN you agree that you are responsible for your own system.
 
 ## Changelog
 
+### v2.5.0 — Polish pass
+- Option 11 label shortened to "BITS" to match its screen header and section title; log-path line spacing unified across screens. No new menu options.
+
 ### v2.4.3 — Buffer matches the window
 - Screen buffer height is now 50 rows (same as the window height) instead of 9000, so scrollback mirrors the visible window exactly.
 
@@ -134,7 +137,7 @@ See [PUBLISHING.md](PUBLISHING.md) for step-by-step instructions to create the G
 
 ## Releasing a new version
 
-Follow this checklist for every new version (e.g. `v2.4.3`):
+Follow this checklist for every new version (e.g. `v2.5.0`):
 
 1. **Bump the version** in `WinUtilKLENN.cmd` — in all three places:
    - the header comment: `rem  WINUTILKLENN   (vX.Y.Z)`

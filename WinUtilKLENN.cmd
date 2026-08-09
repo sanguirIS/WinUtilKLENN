@@ -22,11 +22,16 @@ title WinUtilKLENN
 color 0F
 
 rem ================================================================
-rem  WINUTILKLENN   (v2.4.3)
+rem  WINUTILKLENN   (v2.5.0)
 rem  Diagnostics and guided repair tools for Windows 10 / 11.
 rem  Run as Administrator for full functionality.
 rem ================================================================
 rem  CHANGELOG
+rem  v2.5.0 - Polish pass:
+rem         - Option 11 label shortened to "BITS" so it matches its
+rem           screen header and the section title.
+rem         - Log-path line spacing unified across screens.
+rem         - No menu changes or new options in this release.
 rem  v2.4.3 - Buffer height matches the window:
 rem         - Screen buffer height is now 50 rows (the same as the
 rem           window height) instead of 9000, so scrollback mirrors
@@ -143,7 +148,7 @@ call :RESIZE
 echo.
 echo  %RULE_BIG%
 echo  %BOLD%%BWHT%   WINUTILKLENN%R%
-echo  %BCYN%      Diagnostics and Repair  %SYM_BULLET%  Windows 10 / 11  [ v2.4.3 ]%R%
+echo  %BCYN%      Diagnostics and Repair  %SYM_BULLET%  Windows 10 / 11  [ v2.5.0 ]%R%
 echo  %RULE_BIG%
 echo.
 echo  %BOLD%%CYN%  MEDIA%R%
@@ -163,7 +168,7 @@ echo     %BCYN%%BOLD%9%R%  %SYM_ARROW%  %WHT%Graphics Driver Reset%R%
 echo.
 echo  %BOLD%%CYN%  WINDOWS UPDATE%R%
 echo    %BCYN%%BOLD%10%R%  %SYM_ARROW%  %WHT%Windows Update%R%
-echo    %BCYN%%BOLD%11%R%  %SYM_ARROW%  %WHT%BITS (Background Transfer)%R%
+echo    %BCYN%%BOLD%11%R%  %SYM_ARROW%  %WHT%BITS%R%
 echo.
 echo  %BOLD%%CYN%  OTHER / TOOLS%R%
 echo    %BCYN%%BOLD%12%R%  %SYM_ARROW%  %WHT%Program Compatibility%R%
@@ -633,7 +638,7 @@ echo.
 echo  %BWHT%%SYM_BULLET%%R%  %BOLD%PowerShell version:%R%
 powershell.exe -NoProfile -Command "$PSVersionTable.PSVersion.ToString()"
 echo.
-echo  %DIM%Log: %LOGFILE%%R%
+echo  %DIM%  Log: %LOGFILE%%R%
 echo.
 pause
 goto MENU

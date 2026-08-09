@@ -5,7 +5,7 @@ Step-by-step guide to publish this repository to GitHub: create the repo, push w
 ## 0. Prerequisites
 
 - A GitHub account (https://github.com)
-- Git installed locally (this repo is already initialized on `main` with the `v2.4.1` tag)
+- Git installed locally (this repo is already initialized on `main`; tags `v2.4.1` through `v2.5.0` exist)
 
 The repository **must exist on GitHub before the push works** — Git refuses to push to a repo that doesn't exist yet.
 
@@ -62,8 +62,8 @@ git push -u origin main --tags
 If you don't use the auto-release workflow, create it manually:
 
 1. Go to **https://github.com/sanguirIS/WinUtilKLENN/releases/new**
-2. **Tag:** `v2.4.1` (select it from the dropdown — the annotated tag is already in the repo)
-3. **Title:** `WinUtilKLENN v2.4.1`
+2. **Tag:** `vX.Y.Z` (select it from the dropdown — the annotated tag is already in the repo)
+3. **Title:** `WinUtilKLENN vX.Y.Z`
 4. **Body:** paste the contents of [RELEASE_NOTES.md](RELEASE_NOTES.md)
 5. Click **Publish release**
 
