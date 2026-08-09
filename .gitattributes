@@ -1,0 +1,16 @@
+# Normalize all text files; Git decides binary vs text automatically.
+* text=auto
+
+# ---------- Windows scripts: keep CRLF line endings ----------
+# cmd.exe parses .cmd/.bat most reliably with CRLF; prevents
+# "goto" and label parsing quirks on some systems if converted to LF.
+*.cmd text eol=crlf
+*.bat text eol=crlf
+*.ps1 text eol=crlf
+
+# ---------- Documentation: LF line endings ----------
+*.md text eol=lf
+*.txt text eol=lf
+LICENSE text eol=lf
+*.gitignore text eol=lf
+*.gitattributes text eol=lf
