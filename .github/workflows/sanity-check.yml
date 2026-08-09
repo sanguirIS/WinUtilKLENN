@@ -71,9 +71,30 @@ jobs:
             $errors.Add("Unbalanced parentheses: $open '(' vs $close ')'")
           }
 
+          # 7. Every embedded PowerShell -Command one-liner must parse
+          $psCount = 0
+          foreach ($ln in $scriptLines) {
+            foreach ($m in [regex]::Matches($ln, '-Command\s+"([^"]*)"')) {
+              $psCount++
+              $cmd = $m.Groups[1].Value
+              $cmd = [regex]::Replace($cmd, '%[^%]*%', '')   # strip batch variable expansions
+              $tokens = $null
+              $parseErrors = $null
+              [void][System.Management.Automation.Language.Parser]::ParseInput($cmd, [ref]$tokens, [ref]$parseErrors)
+              foreach ($e in $parseErrors) {
+                $snippet = $ln.Trim()
+                if ($snippet.Length -gt 70) { $snippet = $snippet.Substring(0, 70) + '...' }
+                $errors.Add("PowerShell parse error in '$snippet': $($e.Message)")
+              }
+            }
+          }
+          if ($psCount -eq 0) {
+            $errors.Add("No PowerShell -Command invocations found - extraction may be broken")
+          }
+
           if ($errors.Count -gt 0) {
             Write-Output "::error::Batch sanity check failed"
             foreach ($e in $errors) { Write-Output "::error::$e" }
             exit 1
           }
-          Write-Output "All batch sanity checks passed: $($scriptLines.Count) lines, $($labels.Count) labels, no errors."
+          Write-Output "All batch sanity checks passed: $($scriptLines.Count) lines, $($labels.Count) labels, $psCount PowerShell one-liners, no errors."
