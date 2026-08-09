@@ -57,6 +57,10 @@ git push -u origin main --tags
 
 ## 3. Create the GitHub release
 
+> **Optional: automatic releases.** If the workflow `.github/workflows/release.yml` is in the repo, the release is **created automatically** when you push a `v*` tag — the body is taken from `RELEASE_NOTES.md` at that tag, and the release appears on the Releases page within a minute. No manual step needed.
+
+If you don't use the auto-release workflow, create it manually:
+
 1. Go to **https://github.com/sanguirIS/WinUtilKLENN/releases/new**
 2. **Tag:** `v2.4.1` (select it from the dropdown — the annotated tag is already in the repo)
 3. **Title:** `WinUtilKLENN v2.4.1`
