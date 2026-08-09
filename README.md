@@ -94,6 +94,34 @@ WinUtilKLENN performs actions that change system configuration (services, driver
 
 By using WinUtilKLENN you agree that you are responsible for your own system.
 
+## Changelog
+
+### v2.4.1 — Licensing and polish fixes
+- Added the GPL-3.0 header and the warranty notice (menu and exit screens), as required by the license.
+- Startup resize now runs after the log directory exists, so the applied window size is logged on first launch too.
+- Screen headers shortened (`RULE_SMALL` 40 → 36 chars) so long titles fit the 68-column window without wrapping.
+- Option 15: WinUtil download labels shortened to prevent the long URLs from wrapping at 68 columns.
+
+### v2.4 — Auto-sizing console
+- The console window now auto-sizes to the largest size that fits the current screen and console font (capped at 68×40) so the 66-char border always fits on a single line.
+- The size is re-applied after every screen so the window snaps back if dragged mid-session, and the applied size is logged on each screen.
+
+### v2.3 — Chris Titus Tech WinUtil (option 15)
+- Step-by-step setup: creates `Documents\PowerShell`, downloads `winutil.ps1` (pinned 26.08.04 or latest), execution-policy check, `winget install --id ChrisTitusTech.winutil`, and launch via `irm christitus.com/win | iex`.
+
+### v2.2 — Connectivity & Devices
+- Added "DNS Flush" (option 5) under CONNECTIVITY.
+- Added "Graphics Driver Reset" (option 9) under DEVICES using `pnputil /restart-device` on each active display adapter.
+- Menu renumbered sequentially to 1–14 + Exit.
+
+### v2.1.1 — Elevation fix
+- Fixed critical elevation bug: when already running as Administrator the script fell through into the "Elevation cancelled" block instead of showing the menu, so the menu was never reachable. Added `goto MENU` after the elevation check and moved the "Started" log line so it actually runs.
+
+### v2.1 — Cleanup & reorder
+- Removed the Essential Tweaks menu and all tweak routines.
+- Menu renumbered sequentially (1–12 + Exit); MEDIA section moved to the top of the menu.
+- Code sections physically reordered to match the menu; friendly exit message if the UAC elevation prompt is cancelled.
+
 ## Contributing
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) for the development setup, testing checklist, and code style conventions.
