@@ -22,11 +22,20 @@ title WinUtilKLENN
 color 0F
 
 rem ================================================================
-rem  WINUTILKLENN   (v2.4)
+rem  WINUTILKLENN   (v2.4.1)
 rem  Diagnostics and guided repair tools for Windows 10 / 11.
 rem  Run as Administrator for full functionality.
 rem ================================================================
 rem  CHANGELOG
+rem  v2.4.1 - Licensing and polish fixes:
+rem         - Added the GPL-3.0 header and the warranty notice (menu
+rem           and exit screens), as required by the license.
+rem         - Startup resize now runs after the log directory exists,
+rem           so the applied window size is logged on first launch too.
+rem         - Screen headers shortened (RULE_SMALL 40 to 36 chars) so
+rem           long titles fit the 68-column window without wrapping.
+rem         - Option 15: WinUtil download labels shortened to prevent
+rem           the long URLs from wrapping at 68 columns.
 rem  v2.4 - The console window now auto-sizes: it grows to the largest
 rem         size that fits the current screen and console font (capped
 rem         at 68x40) so the 66-char border always fits on a single
@@ -126,7 +135,7 @@ call :RESIZE
 echo.
 echo  %RULE_BIG%
 echo  %BOLD%%BWHT%   WINUTILKLENN%R%
-echo  %BCYN%      Diagnostics and Repair  %SYM_BULLET%  Windows 10 / 11  [ v2.4 ]%R%
+echo  %BCYN%      Diagnostics and Repair  %SYM_BULLET%  Windows 10 / 11  [ v2.4.1 ]%R%
 echo  %RULE_BIG%
 echo.
 echo  %BOLD%%CYN%  MEDIA%R%
