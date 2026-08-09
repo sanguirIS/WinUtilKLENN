@@ -68,7 +68,7 @@ The `:RESIZE` routine runs on startup and after every screen. Verify it by:
 powershell -NoProfile -Command "$ui=(Get-Host).UI.RawUI; $ui.MaxWindowSize"
 ```
 
-The window must never exceed `68` columns (hard cap) or the screen maximum, whichever is smaller.
+The window must never exceed `68` columns (hard cap) or the screen maximum, whichever is smaller. The window height auto-fits the screen up to `50` rows, and the buffer stays at `9000` rows.
 
 ## Code style
 
@@ -112,8 +112,8 @@ echo [%date% %time%] Your action here >> "%LOGFILE%"
 ### 8. Versioning & changelog
 
 - Bump the version in **three** places:
-  1. the header comment `rem  WINUTILKLENN   (vX.Y)`,
-  2. the menu badge `[ vX.Y ]`,
+  1. the header comment `rem  WINUTILKLENN   (vX.Y.Z)`,
+  2. the menu badge `[ vX.Y.Z ]`,
   3. a new entry at the **top** of the CHANGELOG (newest first), matching the existing style.
 - `X` for feature additions that change the menu, `Y` for fixes and internal changes.
 

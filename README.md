@@ -14,7 +14,7 @@ WinUtilKLENN is a single-file batch utility that gives you a friendly, color-cod
 - **Single file** — no installation, no dependencies beyond what Windows ships with.
 - **Runs as Administrator** — self-elevates via UAC when needed.
 - **Everything is logged** — every action is recorded to `%ProgramData%\WinUtilKLENN\WinUtilKLENN.log`.
-- **Auto-fitted console** — the window resizes to fit your screen (capped at 68×40) on every screen, so the menu border always renders cleanly.
+- **Auto-fitted console** — the window resizes to fit your screen (capped at 68×50) on every screen, so the menu border always renders cleanly.
 
 ---
 
@@ -65,7 +65,7 @@ Option 15 walks you through, step by step:
 
 - **Self-elevation** — if not running as Administrator, the script restarts itself elevated through UAC. If you cancel the prompt, no changes are made.
 - **Logging** — every repair action, plus the applied console window size, is appended to `%ProgramData%\WinUtilKLENN\WinUtilKLENN.log`.
-- **Auto-sizing console** — the window grows to the largest size that fits your screen and console font (capped at 68×40, 9000-row buffer). It re-applies on every screen so the 66-character border never wraps.
+- **Auto-sizing console** — the window grows to the largest size that fits your screen and console font (capped at 68×50, 9000-row buffer). It re-applies on every screen so the 66-character border never wraps.
 
 ## Third-party tools & websites (and their licenses)
 
@@ -95,6 +95,9 @@ WinUtilKLENN performs actions that change system configuration (services, driver
 By using WinUtilKLENN you agree that you are responsible for your own system.
 
 ## Changelog
+
+### v2.4.2 — Resize tuning
+- Window height cap raised from 40 to 50 rows so the window auto-fits more of a tall screen. Width cap stays at 68 columns; the 9000-row buffer is unchanged.
 
 ### v2.4.1 — Licensing and polish fixes
 - Added the GPL-3.0 header and the warranty notice (menu and exit screens), as required by the license.
@@ -128,10 +131,11 @@ See [PUBLISHING.md](PUBLISHING.md) for step-by-step instructions to create the G
 
 ## Releasing a new version
 
-Follow this checklist for every new version (e.g. `v2.5.0`):
+Follow this checklist for every new version (e.g. `v2.4.2`):
 
 1. **Bump the version** in `WinUtilKLENN.cmd` — in all three places:
    - the header comment: `rem  WINUTILKLENN   (vX.Y.Z)`
+   - the script CHANGELOG entry at the top (newest first)
    - the menu badge: `[ vX.Y.Z ]`
    - a new entry at the **top** of the script's CHANGELOG (newest first)
 2. **Update `RELEASE_NOTES.md`** — new title and "What's new" section.

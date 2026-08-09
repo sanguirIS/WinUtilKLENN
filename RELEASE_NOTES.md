@@ -1,21 +1,21 @@
-# WinUtilKLENN v2.4.1
+# WinUtilKLENN v2.4.2
 
-Diagnostics and guided repair tools for Windows 10 / 11 — a single-file batch utility, no installation required.
+Diagnostics and guided repair tools for Windows 10 / 11 — a single-file batch
+utility, no installation required.
 
-## What's new in v2.4.1
+## What's new in v2.4.2
 
-- **GPL-3.0 licensing** — license header added to the script, plus the warranty notice on the menu and exit screens, as the license requires.
-- **Fixed window-size logging** — the startup resize now runs after the log directory exists, so the applied size is recorded on first launch too.
-- **Headers fit the window** — screen title rules shortened (`RULE_SMALL` 40 → 36) so long titles never wrap at the 68-column cap.
-- **Cleaner option 15** — WinUtil download labels shortened so the long URLs no longer wrap.
-
-## Also in v2.4
-
-- **Auto-sizing console** — the window grows to the largest size that fits your screen and console font (capped at 68×40), re-applies after every screen so it snaps back if dragged, and logs the applied size on each screen.
+- **Taller auto-fit window** — the window height cap is raised from 40 to 50
+  rows, so the console fills more of a tall screen. The width cap stays at 68
+  columns (the 66-char menu border still never wraps) and the 9000-row buffer
+  is unchanged.
 
 ## What it does
 
-15 guided menu options: Audio · Video Playback · Windows Media Player · Network & Internet · DNS Flush · Bluetooth · Printer · Camera · Graphics Driver Reset · Windows Update · BITS · Program Compatibility · Complete Diagnostics · System Summary · Chris Titus Tech WinUtil integration.
+15 guided menu options: Audio · Video Playback · Windows Media Player · Network &
+Internet · DNS Flush · Bluetooth · Printer · Camera · Graphics Driver Reset ·
+Windows Update · BITS · Program Compatibility · Complete Diagnostics · System
+Summary · Chris Titus Tech WinUtil integration.
 
 ## Run
 

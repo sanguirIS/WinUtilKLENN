@@ -22,11 +22,15 @@ title WinUtilKLENN
 color 0F
 
 rem ================================================================
-rem  WINUTILKLENN   (v2.4.1)
+rem  WINUTILKLENN   (v2.4.2)
 rem  Diagnostics and guided repair tools for Windows 10 / 11.
 rem  Run as Administrator for full functionality.
 rem ================================================================
 rem  CHANGELOG
+rem  v2.4.2 - Resize tuning:
+rem         - Window height cap raised from 40 to 50 rows so the
+rem           window auto-fits more of a tall screen. Width cap stays
+rem           at 68 columns and the 9000-row buffer is unchanged.
 rem  v2.4.1 - Licensing and polish fixes:
 rem         - Added the GPL-3.0 header and the warranty notice (menu
 rem           and exit screens), as required by the license.
@@ -38,7 +42,7 @@ rem         - Option 15: WinUtil download labels shortened to prevent
 rem           the long URLs from wrapping at 68 columns.
 rem  v2.4 - The console window now auto-sizes: it grows to the largest
 rem         size that fits the current screen and console font (capped
-rem         at 68x40) so the 66-char border always fits on a single
+rem         at 68x50) so the 66-char border always fits on a single
 rem         line. The size is re-applied after every screen so the
 rem         window snaps back if dragged mid-session, and the applied
 rem         size is logged on each screen.
@@ -135,7 +139,7 @@ call :RESIZE
 echo.
 echo  %RULE_BIG%
 echo  %BOLD%%BWHT%   WINUTILKLENN%R%
-echo  %BCYN%      Diagnostics and Repair  %SYM_BULLET%  Windows 10 / 11  [ v2.4.1 ]%R%
+echo  %BCYN%      Diagnostics and Repair  %SYM_BULLET%  Windows 10 / 11  [ v2.4.2 ]%R%
 echo  %RULE_BIG%
 echo.
 echo  %BOLD%%CYN%  MEDIA%R%
@@ -756,13 +760,13 @@ rem  HELPER ROUTINES
 rem ================================================================
 
 rem  Auto-sizes the console window to the largest that fits the current
-rem  screen and console font (capped at 68x40). The buffer width is
+rem  screen and console font (capped at 68x50). The buffer width is
 rem  matched to the window so the border never wraps and no horizontal
 rem  scrollbar appears. Falls back silently if the host cannot be
 rem  resized (e.g. some Windows Terminal configurations). The applied
 rem  size is logged to %LOGFILE% on every call (i.e. on each screen).
 :RESIZE
-powershell.exe -NoProfile -Command "try { $ui=(Get-Host).UI.RawUI; $max=$ui.MaxWindowSize; $wW=[Math]::Min(68,$max.Width); $wH=[Math]::Min(40,$max.Height); $b=$ui.BufferSize; if($b.Width -lt $wW){ $b.Width=$wW; $b.Height=9000; $ui.BufferSize=$b }; $w=$ui.WindowSize; $w.Width=$wW; $w.Height=$wH; $ui.WindowSize=$w; $b=$ui.BufferSize; $b.Width=$wW; $b.Height=9000; $ui.BufferSize=$b; $ws=$ui.WindowSize; Add-Content -LiteralPath '%LOGFILE%' -Value ('[{0}] Window size applied: {1}x{2}' -f (Get-Date -Format 'MM/dd/yyyy HH:mm:ss'), $ws.Width, $ws.Height) } catch {}" >nul 2>&1
+powershell.exe -NoProfile -Command "try { $ui=(Get-Host).UI.RawUI; $max=$ui.MaxWindowSize; $wW=[Math]::Min(68,$max.Width); $wH=[Math]::Min(50,$max.Height); $b=$ui.BufferSize; if($b.Width -lt $wW){ $b.Width=$wW; $b.Height=9000; $ui.BufferSize=$b }; $w=$ui.WindowSize; $w.Width=$wW; $w.Height=$wH; $ui.WindowSize=$w; $b=$ui.BufferSize; $b.Width=$wW; $b.Height=9000; $ui.BufferSize=$b; $ws=$ui.WindowSize; Add-Content -LiteralPath '%LOGFILE%' -Value ('[{0}] Window size applied: {1}x{2}' -f (Get-Date -Format 'MM/dd/yyyy HH:mm:ss'), $ws.Width, $ws.Height) } catch {}" >nul 2>&1
 goto :eof
 
 :HEADER
