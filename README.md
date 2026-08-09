@@ -122,6 +122,10 @@ By using WinUtilKLENN you agree that you are responsible for your own system.
 - Menu renumbered sequentially (1–12 + Exit); MEDIA section moved to the top of the menu.
 - Code sections physically reordered to match the menu; friendly exit message if the UAC elevation prompt is cancelled.
 
+## Publishing
+
+See [PUBLISHING.md](PUBLISHING.md) for step-by-step instructions to create the GitHub repo, push (HTTPS or SSH), tag, and publish the release.
+
 ## Contributing
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) for the development setup, testing checklist, and code style conventions.
