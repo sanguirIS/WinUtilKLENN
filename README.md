@@ -126,6 +126,24 @@ By using WinUtilKLENN you agree that you are responsible for your own system.
 
 See [PUBLISHING.md](PUBLISHING.md) for step-by-step instructions to create the GitHub repo, push (HTTPS or SSH), tag, and publish the release.
 
+## Releasing a new version
+
+Follow this checklist for every new version (e.g. `v2.5.0`):
+
+1. **Bump the version** in `WinUtilKLENN.cmd` — in all three places:
+   - the header comment: `rem  WINUTILKLENN   (vX.Y.Z)`
+   - the menu badge: `[ vX.Y.Z ]`
+   - a new entry at the **top** of the script's CHANGELOG (newest first)
+2. **Update `RELEASE_NOTES.md`** — new title and "What's new" section.
+3. **Mirror the changelog** in this README's [Changelog](#changelog) section.
+4. **Commit and push** the changes — CI runs the 7 sanity checks automatically (see [CONTRIBUTING.md](CONTRIBUTING.md) for the manual test checklist).
+5. **Tag and push the release:**
+   ```bash
+   git tag -a vX.Y.Z -m "WinUtilKLENN vX.Y.Z"
+   git push origin vX.Y.Z --tags
+   ```
+6. **Done — the release is created automatically** by the *Auto release* workflow, using `RELEASE_NOTES.md` as the body. Verify it at https://github.com/sanguirIS/WinUtilKLENN/releases
+
 ## Contributing
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) for the development setup, testing checklist, and code style conventions.
