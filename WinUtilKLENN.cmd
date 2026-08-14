@@ -22,11 +22,38 @@ title WinUtilKLENN
 color 0F
 
 rem ================================================================
-rem  WINUTILKLENN   (v2.5.0)
+rem  WINUTILKLENN   (v2.7.1)
 rem  Diagnostics and guided repair tools for Windows 10 / 11.
 rem  Run as Administrator for full functionality.
 rem ================================================================
 rem  CHANGELOG
+rem  v2.7.1 - Bug fixes and improvements:
+rem         - Fixed version comparison logic in update check to properly
+rem           handle all version number formats (x.y.z)
+rem         - Improved error handling in Node.js and npm tool installation
+rem         - Updated GitHub API user-agent for better compatibility
+rem  v2.7.0 - New tools:
+rem         - Added "winget Upgrade" (16): lists and upgrades all winget
+rem           packages, with a verdict and a pending-reboot check.
+rem         - Added "yoinks" (17): download videos from YouTube, X,
+rem           Instagram, TikTok and 1,800+ other sites (npm tool).
+rem         - Added "ghgrab" (18): browse and download files, folders or
+rem           release assets from GitHub repos without cloning (npm tool).
+rem         - Added "Freebuff - AI Help" (19): the free AI coding agent
+rem           CLI from freebuff.com (npm tool).
+rem         - Options 17-19 auto-install their npm tool on first use if
+rem           it is missing (Node.js via winget if npm is not present),
+rem           then launch it directly.
+rem         - Menu renumbered sequentially to 1-24 + Exit.
+rem  v2.6.0 - Version and maintenance features:
+rem         - Added "Check for Updates" (option 19): compares the
+rem           installed version with the latest GitHub release and
+rem           offers to open the release page.
+rem         - Added a MAINTENANCE section: Disk Cleanup (12), Restore
+rem           Point (13), Battery Report (14), Restart / Shutdown (15).
+rem         - The version now lives in one VERSION variable used by
+rem           the menu badge and the update check.
+rem         - Small wording fixes in on-screen messages.
 rem  v2.5.0 - Polish pass:
 rem         - Option 11 label shortened to "BITS" so it matches its
 rem           screen header and the section title.
@@ -77,6 +104,7 @@ rem       - Friendly exit message if the UAC elevation prompt is cancelled.
 
 set "LOGDIR=%ProgramData%\WinUtilKLENN"
 set "LOGFILE=%LOGDIR%\WinUtilKLENN.log"
+set "VERSION=v2.7.1"
 
 if not exist "%LOGDIR%" mkdir "%LOGDIR%" >nul 2>&1
 
@@ -120,6 +148,10 @@ for /f "tokens=1-6 delims=|" %%a in ('powershell -NoProfile -Command "$h=[char]0
     set "RULE_SMALL=%%f"
 )
 
+rem ------- Optional test mode (skip elevation) -----------------------
+rem  Set WINUTIL_TEST=1 to run the menu without the UAC prompt.
+rem  Useful for smoke tests; no system changes are made.
+if /i "%WINUTIL_TEST%"=="1" goto MENU
 rem ------- Self-elevate so repair actions can run --------------------
 net session >nul 2>&1
 if not "%errorlevel%"=="0" (
@@ -148,7 +180,7 @@ call :RESIZE
 echo.
 echo  %RULE_BIG%
 echo  %BOLD%%BWHT%   WINUTILKLENN%R%
-echo  %BCYN%      Diagnostics and Repair  %SYM_BULLET%  Windows 10 / 11  [ v2.5.0 ]%R%
+echo  %BCYN%      Diagnostics and Repair  %SYM_BULLET%  Windows 10 / 11  [ %VERSION% ]%R%
 echo  %RULE_BIG%
 echo.
 echo  %BOLD%%CYN%  MEDIA%R%
@@ -170,11 +202,22 @@ echo  %BOLD%%CYN%  WINDOWS UPDATE%R%
 echo    %BCYN%%BOLD%10%R%  %SYM_ARROW%  %WHT%Windows Update%R%
 echo    %BCYN%%BOLD%11%R%  %SYM_ARROW%  %WHT%BITS%R%
 echo.
+echo  %BOLD%%CYN%  MAINTENANCE%R%
+echo    %BCYN%%BOLD%12%R%  %SYM_ARROW%  %WHT%Disk Cleanup%R%
+echo    %BCYN%%BOLD%13%R%  %SYM_ARROW%  %WHT%Restore Point%R%
+echo    %BCYN%%BOLD%14%R%  %SYM_ARROW%  %WHT%Battery Report%R%
+echo    %BCYN%%BOLD%15%R%  %SYM_ARROW%  %WHT%Restart / Shutdown%R%
+echo    %BCYN%%BOLD%16%R%  %SYM_ARROW%  %WHT%winget Upgrade%R%
+echo.
 echo  %BOLD%%CYN%  OTHER / TOOLS%R%
-echo    %BCYN%%BOLD%12%R%  %SYM_ARROW%  %WHT%Program Compatibility%R%
-echo    %BCYN%%BOLD%13%R%  %SYM_ARROW%  %WHT%Run ALL Diagnostics%R%
-echo    %BCYN%%BOLD%14%R%  %SYM_ARROW%  %WHT%System Summary%R%
-echo    %BCYN%%BOLD%15%R%  %SYM_ARROW%  %WHT%Chris Titus Tech WinUtil%R%
+echo    %BCYN%%BOLD%17%R%  %SYM_ARROW%  %WHT%Yoinks - Video Downloader%R%
+echo    %BCYN%%BOLD%18%R%  %SYM_ARROW%  %WHT%ghgrab - GitHub Downloader%R%
+echo    %BCYN%%BOLD%19%R%  %SYM_ARROW%  %WHT%Freebuff - AI Agent%R%
+echo    %BCYN%%BOLD%20%R%  %SYM_ARROW%  %WHT%Program Compatibility%R%
+echo    %BCYN%%BOLD%21%R%  %SYM_ARROW%  %WHT%Run ALL Diagnostics%R%
+echo    %BCYN%%BOLD%22%R%  %SYM_ARROW%  %WHT%System Summary%R%
+echo    %BCYN%%BOLD%23%R%  %SYM_ARROW%  %WHT%Check for Updates%R%
+echo    %BCYN%%BOLD%24%R%  %SYM_ARROW%  %WHT%Chris Titus Tech WinUtil%R%
 echo     %BCYN%%BOLD%0%R%  %SYM_ARROW%  %WHT%Exit%R%
 echo.
 echo  %RULE_BIG%
@@ -184,7 +227,7 @@ echo  %DIM%  This program comes with ABSOLUTELY NO WARRANTY.%R%
 echo  %DIM%  Free software: redistribute under the GNU GPL v3 - see LICENSE%R%
 echo.
 set "CHOICE="
-set /p "CHOICE=%BOLD%%BWHT%  Select an option %R%%CYN%[0-15]%R%%BOLD%%BWHT%: %R%"
+set /p "CHOICE=%BOLD%%BWHT%  Select an option %R%%CYN%[0-24]%R%%BOLD%%BWHT%: %R%"
 if "%CHOICE%"=="" goto MENU
 if "%CHOICE%"=="1" goto AUDIO
 if "%CHOICE%"=="2" goto VIDEO
@@ -197,10 +240,19 @@ if "%CHOICE%"=="8" goto CAMERA
 if "%CHOICE%"=="9" goto GFXRESET
 if "%CHOICE%"=="10" goto UPDATE
 if "%CHOICE%"=="11" goto BITS
-if "%CHOICE%"=="12" goto COMPAT
-if "%CHOICE%"=="13" goto ALL
-if "%CHOICE%"=="14" goto SUMMARY
-if "%CHOICE%"=="15" goto WINUTIL
+if "%CHOICE%"=="12" goto DISKCLEAN
+if "%CHOICE%"=="13" goto RESTOPOINT
+if "%CHOICE%"=="14" goto BATTERY
+if "%CHOICE%"=="15" goto POWER
+if "%CHOICE%"=="16" goto WINGETUP
+if "%CHOICE%"=="17" goto YOINK
+if "%CHOICE%"=="18" goto GHGRAB
+if "%CHOICE%"=="19" goto FREEBUFF
+if "%CHOICE%"=="20" goto COMPAT
+if "%CHOICE%"=="21" goto ALL
+if "%CHOICE%"=="22" goto SUMMARY
+if "%CHOICE%"=="23" goto UPDATECHECK
+if "%CHOICE%"=="24" goto WINUTIL
 if "%CHOICE%"=="0" goto END
 echo.
 echo  %BRED%!%R%  %WHT%Invalid selection: %CHOICE%%R%
@@ -234,10 +286,12 @@ call :CHECKSVC AudioEndpointBuilder "Audio Endpoint Builder"
 call :CHECKSVC Audiosrv "Windows Audio"
 sc query Audiosrv 2>nul | findstr /C:": 4  " >nul
 if errorlevel 1 goto AUDIO_FAIL
-echo  %BGGRN%%BLK%[ OK ]%R%  %BGRN%Audio repair completed.%R%
+call :VERDICT FIXED "Audio services are running again."
+call :RESTARTNOTE NO
 goto AUDIO_LOG
 :AUDIO_FAIL
-echo  %BGRED%%WHT%[ !! ]%R%  %RED%Audio services failed to start. Try restarting the PC.%R%
+call :VERDICT NOT "Audio services failed to start."
+call :RESTARTNOTE YES
 :AUDIO_LOG
 echo [%date% %time%] Audio repair >> "%LOGFILE%"
 echo.
@@ -323,8 +377,16 @@ echo.
 echo  %CYN%%SYM_ARROW%%R%  Resetting TCP/IP stack...
 netsh int ip reset
 echo.
-echo  %BGGRN%%BLK%[ OK ]%R%  %BGRN%Network repair completed.%R%
-echo  %BYLW%!%R%  %WHT%A restart is recommended to apply the changes.%R%
+echo.
+echo  %BWHT%%SYM_BULLET%%R%  %BOLD%Network check after the reset:%R%
+powershell.exe -NoProfile -ExecutionPolicy Bypass -Command "$ok=0; foreach($x in '1.1.1.1','8.8.8.8'){ if(Test-Connection -ComputerName $x -Count 2 -Quiet){ $ok++ } }; Write-Host ('   Reachable: ' + $ok + ' of 2 test addresses.'); if($ok -eq 0){ exit 1 }"
+if errorlevel 1 goto NET_FAIL
+call :VERDICT FIXED "Network is reachable."
+goto NET_END
+:NET_FAIL
+call :VERDICT NOT "Network is still unreachable."
+:NET_END
+call :RESTARTNOTE YES
 echo [%date% %time%] Network reset >> "%LOGFILE%"
 echo.
 pause
@@ -348,7 +410,14 @@ choice /C YN /N
 if errorlevel 2 goto MENU
 echo  %CYN%%SYM_ARROW%%R%  Flushing DNS cache...
 ipconfig /flushdns
-echo  %BGGRN%%BLK%[ OK ]%R%  %BGRN%DNS cache flushed.%R%
+powershell.exe -NoProfile -ExecutionPolicy Bypass -Command "$c=@(Get-DnsClientCache -ErrorAction SilentlyContinue).Count; Write-Host ('   Cache entries now: ' + $c); if($c -eq 0){ exit 0 } else { exit 1 }"
+if errorlevel 1 goto DNSF_NOTCLEAR
+call :VERDICT FIXED "The DNS cache is empty."
+goto DNSF_END
+:DNSF_NOTCLEAR
+call :VERDICT FIXED "DNS cache was flushed."
+:DNSF_END
+call :RESTARTNOTE NO
 echo [%date% %time%] DNS cache flushed >> "%LOGFILE%"
 echo.
 pause
@@ -374,7 +443,16 @@ echo  %CYN%%SYM_ARROW%%R%  Restarting Bluetooth service...
 net stop bthserv /y >nul 2>&1
 net start bthserv >nul 2>&1
 call :CHECKSVC bthserv "Bluetooth Support Service"
-echo  %BGGRN%%BLK%[ OK ]%R%  %BGRN%Bluetooth repair completed.%R%
+sc query bthserv 2>nul | findstr /C:": 4  " >nul
+if errorlevel 1 goto BT_FAIL
+call :VERDICT FIXED "The Bluetooth service is running again."
+call :RESTARTNOTE NO
+goto BT_END
+:BT_FAIL
+call :VERDICT NOT "The Bluetooth service failed to start."
+call :RESTARTNOTE YES
+:BT_END
+echo [%date% %time%] Bluetooth service restarted >> "%LOGFILE%"
 echo.
 pause
 goto MENU
@@ -400,7 +478,15 @@ net stop Spooler /y >nul 2>&1
 powershell.exe -NoProfile -ExecutionPolicy Bypass -Command "Get-Printer -ErrorAction SilentlyContinue | ForEach-Object { Get-PrintJob -PrinterName $_.Name -ErrorAction SilentlyContinue | Remove-PrintJob -ErrorAction SilentlyContinue }"
 net start Spooler >nul 2>&1
 call :CHECKSVC Spooler "Print Spooler"
-echo  %BGGRN%%BLK%[ OK ]%R%  %BGRN%Printer repair completed.%R%
+sc query Spooler 2>nul | findstr /C:": 4  " >nul
+if errorlevel 1 goto PRN_FAIL
+call :VERDICT FIXED "The Print Spooler is running again."
+call :RESTARTNOTE NO
+goto PRN_END
+:PRN_FAIL
+call :VERDICT NOT "The Print Spooler failed to start."
+call :RESTARTNOTE YES
+:PRN_END
 echo [%date% %time%] Printer spooler reset >> "%LOGFILE%"
 echo.
 pause
@@ -424,7 +510,17 @@ choice /C YN /N
 if errorlevel 2 goto MENU
 echo  %CYN%%SYM_ARROW%%R%  Scanning for hardware changes...
 pnputil.exe /scan-devices
-echo  %BGGRN%%BLK%[ OK ]%R%  %BGRN%Device scan completed.%R%
+powershell.exe -NoProfile -ExecutionPolicy Bypass -Command "$n=@(Get-PnpDevice -Class Camera -ErrorAction SilentlyContinue).Count; Write-Host ('   Camera devices found: ' + $n); if($n -gt 0){ exit 0 } else { exit 1 }"
+if errorlevel 1 goto CAM_FAIL
+call :VERDICT FIXED "Camera devices are detected."
+call :RESTARTNOTE NO
+goto CAM_END
+:CAM_FAIL
+call :VERDICT NOT "No camera devices found."
+echo  %DIM%  Check the webcam privacy setting or the driver.%R%
+call :RESTARTNOTE NO
+:CAM_END
+echo [%date% %time%] Camera PnP rescan >> "%LOGFILE%"
 echo.
 pause
 goto MENU
@@ -450,12 +546,14 @@ for /f "delims=" %%d in ('powershell.exe -NoProfile -Command "Get-PnpDevice -Cla
     if not errorlevel 1 set "GFX_DONE=1"
 )
 if "%GFX_DONE%"=="0" goto GFX_FAIL
-echo  %BGGRN%%BLK%[ OK ]%R%  %BGRN%Display driver(s) restarted.%R%
+call :VERDICT FIXED "The display driver was restarted."
+call :RESTARTNOTE NO
 echo [%date% %time%] Graphics driver reset >> "%LOGFILE%"
 goto GFX_END
 :GFX_FAIL
-echo  %RED%%SYM_NO%%R%  %WHT%No display adapter could be restarted.%R%
+call :VERDICT NOT "No display adapter could be restarted."
 echo  %DIM%  Try updating the driver or restarting the PC instead.%R%
+call :RESTARTNOTE YES
 :GFX_END
 echo.
 pause
@@ -493,11 +591,19 @@ net start cryptsvc >nul 2>&1
 net start bits >nul 2>&1
 net start wuauserv >nul 2>&1
 call :CHECKSVC wuauserv "Windows Update"
-echo  %BGGRN%%BLK%[ OK ]%R%  %BGRN%Windows Update cache reset completed.%R%
+sc query wuauserv 2>nul | findstr /C:": 4  " >nul
+if errorlevel 1 goto UPDC_FAIL
+call :VERDICT FIXED "Windows Update services are running again."
+call :RESTARTNOTE NO
+goto UPDC_END
+:UPDC_FAIL
+call :VERDICT NOT "Windows Update services failed to start."
+call :RESTARTNOTE YES
+:UPDC_END
 echo [%date% %time%] Windows Update cache reset >> "%LOGFILE%"
 echo.
 :UPDATE_SFC
-echo  %BYLW%?%R%  %WHT%Run DISM component repair and SFC scannow?%R%  %CYN%[ Y / N ]%R%
+echo  %BYLW%?%R%  %WHT%Run DISM component repair and sfc /scannow?%R%  %CYN%[ Y / N ]%R%
 echo  %DIM%  (This can take 10-30 minutes; DISM needs internet access)%R%
 choice /C YN /N
 if errorlevel 2 goto MENU
@@ -507,7 +613,15 @@ echo.
 echo  %CYN%%SYM_ARROW%%R%  %BOLD%Running SFC /scannow...%R%
 sfc.exe /scannow
 echo.
-echo  %BGGRN%%BLK%[ OK ]%R%  %BGRN%System file repair completed.%R%
+call :REBOOTCHECK
+if errorlevel 1 goto SFC_RESTART
+call :VERDICT FIXED "System file repair completed."
+call :RESTARTNOTE NO
+goto SFC_END
+:SFC_RESTART
+call :VERDICT FIXED "System file repair completed."
+call :RESTARTNOTE YES
+:SFC_END
 echo [%date% %time%] DISM+SFC run >> "%LOGFILE%"
 echo.
 pause
@@ -536,13 +650,294 @@ net start bits >nul 2>&1
 net start wuauserv >nul 2>&1
 call :CHECKSVC bits "BITS"
 call :CHECKSVC wuauserv "Windows Update"
-echo  %BGGRN%%BLK%[ OK ]%R%  %BGRN%BITS repair completed.%R%
+sc query bits 2>nul | findstr /C:": 4  " >nul
+if errorlevel 1 goto BITS_FAIL
+call :VERDICT FIXED "BITS and Windows Update are running again."
+call :RESTARTNOTE NO
+goto BITS_END
+:BITS_FAIL
+call :VERDICT NOT "BITS or Windows Update failed to start."
+call :RESTARTNOTE YES
+:BITS_END
+echo [%date% %time%] BITS service restart >> "%LOGFILE%"
 echo.
 pause
 goto MENU
 
 rem ================================================================
-rem  12. PROGRAM COMPATIBILITY
+rem  12. DISK CLEANUP
+rem ================================================================
+:DISKCLEAN
+cls
+call :RESIZE
+call :HEADER "DISK CLEANUP"
+echo  %BWHT%%SYM_BULLET%%R%  %BOLD%Free space before cleanup:%R%
+powershell.exe -NoProfile -ExecutionPolicy Bypass -Command "Get-CimInstance Win32_LogicalDisk -Filter 'DriveType=3' | ForEach-Object { Write-Host ('   Disk '+$_.DeviceID+'  '+[math]::Round($_.FreeSpace/1GB,1)+' GB free') }"
+echo.
+echo  %BYLW%?%R%  %WHT%Delete temporary files and empty the Recycle Bin?%R%  %CYN%[ Y / N ]%R%
+echo  %DIM%  Only temp files are removed - personal files are untouched.%R%
+choice /C YN /N
+if errorlevel 2 goto MENU
+echo  %CYN%%SYM_ARROW%%R%  Cleaning temporary files...
+powershell.exe -NoProfile -ExecutionPolicy Bypass -Command "$paths=@('%TEMP%','%SystemRoot%\Temp'); foreach($p in $paths){ Get-ChildItem -LiteralPath $p -Force -ErrorAction SilentlyContinue | Remove-Item -Recurse -Force -ErrorAction SilentlyContinue }; Clear-RecycleBin -Force -ErrorAction SilentlyContinue"
+echo.
+echo  %BWHT%%SYM_BULLET%%R%  %BOLD%Free space after cleanup:%R%
+powershell.exe -NoProfile -ExecutionPolicy Bypass -Command "Get-CimInstance Win32_LogicalDisk -Filter 'DriveType=3' | ForEach-Object { Write-Host ('   Disk '+$_.DeviceID+'  '+[math]::Round($_.FreeSpace/1GB,1)+' GB free') }"
+call :VERDICT FIXED "Cleanup completed."
+call :RESTARTNOTE NO
+echo [%date% %time%] Disk cleanup >> "%LOGFILE%"
+echo.
+pause
+goto MENU
+
+rem ================================================================
+rem  13. SYSTEM RESTORE POINT
+rem ================================================================
+:RESTOPOINT
+cls
+call :RESIZE
+call :HEADER "SYSTEM RESTORE POINT"
+echo  %BWHT%%SYM_BULLET%%R%  %BOLD%Existing restore points:%R%
+powershell.exe -NoProfile -ExecutionPolicy Bypass -Command "Get-ComputerRestorePoint -ErrorAction SilentlyContinue | Select-Object SequenceNumber,Description,CreationTime | Format-Table -AutoSize"
+echo.
+echo  %BYLW%?%R%  %WHT%Create a restore point now?%R%  %CYN%[ Y / N ]%R%
+echo  %DIM%  (System Protection is enabled first if needed)%R%
+choice /C YN /N
+if errorlevel 2 goto MENU
+echo  %CYN%%SYM_ARROW%%R%  Enabling System Protection on the system drive...
+powershell.exe -NoProfile -ExecutionPolicy Bypass -Command "Enable-ComputerRestore -Drive '%SystemDrive%\' -ErrorAction SilentlyContinue"
+echo  %CYN%%SYM_ARROW%%R%  Creating restore point...
+powershell.exe -NoProfile -ExecutionPolicy Bypass -Command "try { Checkpoint-Computer -Description 'WinUtilKLENN restore point' -RestorePointType MODIFY_SETTINGS -ErrorAction Stop; exit 0 } catch { exit 1 }"
+if errorlevel 1 goto RESTORE_FAIL
+call :VERDICT FIXED "Restore point created."
+call :RESTARTNOTE NO
+echo [%date% %time%] Restore point created >> "%LOGFILE%"
+goto RESTORE_END
+:RESTORE_FAIL
+call :VERDICT NOT "Could not create a restore point."
+echo  %DIM%  Open System Properties ^> System Protection, make sure protection is%R%
+echo  %DIM%  enabled for the system drive, then try again.%R%
+:RESTORE_END
+echo.
+pause
+goto MENU
+
+rem ================================================================
+rem  14. BATTERY REPORT
+rem ================================================================
+:BATTERY
+cls
+call :RESIZE
+call :HEADER "BATTERY REPORT"
+echo  %BWHT%%SYM_BULLET%%R%  %BOLD%Battery status:%R%
+powershell.exe -NoProfile -ExecutionPolicy Bypass -Command "$b=Get-CimInstance Win32_Battery -ErrorAction SilentlyContinue; if(-not $b){Write-Host '   No battery detected - this looks like a desktop PC.'}else{$s=switch($b.BatteryStatus){1{'Discharging'}2{'On AC power'}3{'Fully charged'}4{'Low'}5{'Critical'}6{'Charging'}default{'Code '+$_}}; Write-Host ('   Charge: '+$b.EstimatedChargeRemaining+'%   Status: '+$s)}"
+echo.
+echo  %BYLW%?%R%  %WHT%Generate the full battery report (powercfg)?%R%  %CYN%[ Y / N ]%R%
+choice /C YN /N
+if errorlevel 2 goto MENU
+echo  %CYN%%SYM_ARROW%%R%  Generating battery report...
+powercfg /batteryreport /output "%LOGDIR%\battery-report.html" >nul 2>&1
+if errorlevel 1 goto BATTERY_FAIL
+echo  %BGGRN%%BLK%[ OK ]%R%  %BGRN%Battery report saved:%R%
+echo  %CYN%      %LOGDIR%\battery-report.html%R%
+echo  %BYLW%?%R%  %WHT%Open it in the default browser?%R%  %CYN%[ Y / N ]%R%
+choice /C YN /N
+if errorlevel 2 goto BATTERY_END
+start "" "%LOGDIR%\battery-report.html"
+goto BATTERY_END
+:BATTERY_FAIL
+echo  %RED%%SYM_NO%%R%  %WHT%Could not generate the battery report.%R%
+echo  %DIM%  This usually means the PC has no battery (a desktop).%R%
+:BATTERY_END
+echo [%date% %time%] Battery report >> "%LOGFILE%"
+echo.
+pause
+goto MENU
+
+rem ================================================================
+rem  15. RESTART / SHUTDOWN
+rem ================================================================
+:POWER
+cls
+call :RESIZE
+call :HEADER "RESTART / SHUTDOWN"
+echo  %WHT%What do you want to do?%R%
+echo    %BCYN%%BOLD%1%R%  %SYM_ARROW%  %WHT%Restart the PC%R%
+echo    %BCYN%%BOLD%2%R%  %SYM_ARROW%  %WHT%Shut down the PC%R%
+echo    %BCYN%%BOLD%0%R%  %SYM_ARROW%  %WHT%Cancel - back to the menu%R%
+echo.
+choice /C 120 /N
+if errorlevel 3 goto MENU
+if errorlevel 2 goto POWER_OFF
+echo  %BYLW%?%R%  %WHT%Restart the PC in 30 seconds?%R%  %CYN%[ Y / N ]%R%
+choice /C YN /N
+if errorlevel 2 goto MENU
+shutdown /r /t 30
+echo [%date% %time%] Restart scheduled >> "%LOGFILE%"
+echo  %BGGRN%%BLK%[ OK ]%R%  %BGRN%Restart scheduled in 30 seconds.%R%
+echo  %BYLW%!%R%  %WHT%To cancel, open another Command Prompt and run:  shutdown /a%R%
+echo.
+pause
+goto MENU
+:POWER_OFF
+echo  %BYLW%?%R%  %WHT%Shut down the PC in 30 seconds?%R%  %CYN%[ Y / N ]%R%
+choice /C YN /N
+if errorlevel 2 goto MENU
+shutdown /s /t 30
+echo [%date% %time%] Shutdown scheduled >> "%LOGFILE%"
+echo  %BGGRN%%BLK%[ OK ]%R%  %BGRN%Shutdown scheduled in 30 seconds.%R%
+echo  %BYLW%!%R%  %WHT%To cancel, open another Command Prompt and run:  shutdown /a%R%
+echo.
+pause
+goto MENU
+
+rem ================================================================
+rem  16. WINGET UPGRADE
+rem ================================================================
+:WINGETUP
+cls
+call :RESIZE
+call :HEADER "WINGET UPGRADE"
+winget --version >nul 2>&1
+if errorlevel 1 goto WINGET_MISSING
+echo  %BWHT%%SYM_BULLET%%R%  %BOLD%Available updates:%R%
+winget upgrade
+echo.
+echo  %BYLW%?%R%  %WHT%Upgrade all packages now?%R%  %CYN%[ Y / N ]%R%
+echo  %DIM%  (winget upgrade --all - some apps may need to close)%R%
+choice /C YN /N
+if errorlevel 2 goto MENU
+echo  %CYN%%SYM_ARROW%%R%  Upgrading all packages, this can take a while...
+winget upgrade --all --accept-package-agreements --accept-source-agreements
+echo.
+echo  %BWHT%%SYM_BULLET%%R%  %BOLD%Remaining updates:%R%
+winget upgrade
+echo.
+call :REBOOTCHECK
+if errorlevel 1 goto WINGET_RESTART
+call :VERDICT FIXED "The winget upgrade finished."
+call :RESTARTNOTE NO
+goto WINGET_END
+:WINGET_RESTART
+call :VERDICT FIXED "The winget upgrade finished."
+call :RESTARTNOTE YES
+goto WINGET_END
+:WINGET_MISSING
+echo  %RED%%SYM_NO%%R%  %WHT%winget is not installed.%R%
+echo  %DIM%  Install 'App Installer' from the Microsoft Store, then re-run.%R%
+:WINGET_END
+echo [%date% %time%] winget upgrade run >> "%LOGFILE%"
+echo.
+pause
+goto MENU
+
+rem ================================================================
+rem  17. YOINKS - VIDEO DOWNLOADER (npm)
+rem ================================================================
+:YOINK
+cls
+call :RESIZE
+call :HEADER "YOINKS - VIDEO DOWNLOADER"
+echo  %WHT%Download videos from YouTube, X, Instagram, Threads, TikTok%R%
+echo  %WHT%and 1,800+ other sites - right from your terminal.%R%
+echo  %DIM%  Videos are saved to your Downloads folder.%R%
+echo.
+call :NPMSETUP yoinks yoinks "yoinks video downloader"
+if errorlevel 1 goto YOINK_END
+echo.
+echo  %BOLD%%CYN%  Choose how to launch yoinks:%R%
+echo     %BCYN%%BOLD%1%R%  %SYM_ARROW%  %WHT%CMD - opens a blank command prompt and types 'yoinks '%R%
+echo     %BCYN%%BOLD%2%R%  %SYM_ARROW%  %WHT%Windows Terminal - opens a new WT window%R%
+echo     %BCYN%%BOLD%0%R%  %SYM_ARROW%  %WHT%Cancel - back to main menu%R%
+echo.
+set "YOINK_CHOICE="
+set /p "YOINK_CHOICE=%BOLD%%BWHT%  Select an option %R%%CYN%[0-2]%R%%BOLD%%BWHT%: %R%"
+if "%YOINK_CHOICE%"=="" goto YOINK_END
+if "%YOINK_CHOICE%"=="0" goto YOINK_END
+if "%YOINK_CHOICE%"=="1" (
+    echo.
+    echo  %CYN%%SYM_ARROW%%R%  Opening a blank CMD window for yoinks...
+    echo  %DIM%  The window opens clean and 'yoinks ' is typed automatically.%R%
+    echo  %DIM%  Paste the video link, then press Enter manually.%R%
+    echo  %DIM%  The script will return here only after the CMD window closes.%R%
+    echo.
+    powershell -NoProfile -Command "$wshell = New-Object -ComObject WScript.Shell; $p = Start-Process cmd.exe -PassThru; Start-Sleep -Milliseconds 800; $wshell.AppActivate($p.Id); Start-Sleep -Milliseconds 150; $wshell.SendKeys('yoinks ');"
+    timeout /t 2 /nobreak >nul
+) else if "%YOINK_CHOICE%"=="2" (
+    echo.
+    echo  %CYN%%SYM_ARROW%%R%  Opening Windows Terminal and running yoinks...
+    echo  %DIM%  Yoinks will launch in a new WT window.%R%
+    echo  %DIM%  The script will return here only after the WT window closes.%R%
+    start "" /wait wt.exe new-tab --suppressApplicationTitle yoinks
+) else (
+    echo.
+    echo  %BRED%!%R%  %WHT%Invalid selection.%R%
+    pause
+    goto YOINK_END
+)
+echo.
+echo  %BGGRN%%BLK%[ OK ]%R%  %BGRN%yoinks closed - videos are in your Downloads folder.%R%
+echo [%date% %time%] yoinks video downloader run >> "%LOGFILE%"
+:YOINK_END
+echo.
+pause
+goto MENU
+
+rem ================================================================
+rem  18. GHGRAB - GITHUB DOWNLOADER (npm)
+rem ================================================================
+:GHGRAB
+cls
+call :RESIZE
+call :HEADER "GHGRAB - GITHUB DOWNLOADER"
+echo  %WHT%Browse and download files or folders from any GitHub repo,%R%
+echo  %WHT%or grab release assets - without cloning the whole repo.%R%
+echo.
+call :NPMSETUP @ghgrab/ghgrab ghgrab "ghgrab"
+if errorlevel 1 goto GHGRAB_END
+echo.
+echo  %CYN%%SYM_ARROW%%R%  Launching ghgrab...
+echo  %DIM%  Paste a repo link (e.g. https://github.com/rust-lang/rust)%R%
+echo  %DIM%  or run  ghgrab rel owner/repo  for release assets.%R%
+echo.
+call :RESIZE_MAX
+call ghgrab
+echo.
+echo  %BGGRN%%BLK%[ OK ]%R%  %BGRN%ghgrab closed.%R%
+echo [%date% %time%] ghgrab run >> "%LOGFILE%"
+:GHGRAB_END
+echo.
+pause
+goto MENU
+
+rem ================================================================
+rem  19. FREEBUFF - AI HELP (npm)
+rem ================================================================
+:FREEBUFF
+cls
+call :RESIZE
+call :HEADER "FREEBUFF - AI HELP"
+echo  %WHT%Freebuff is a free AI coding agent that runs in your terminal.%R%
+echo  %WHT%Ask it about an error, or get any repair step explained.%R%
+echo.
+call :NPMSETUP freebuff freebuff "freebuff"
+if errorlevel 1 goto FREEBUFF_END
+echo.
+echo  %CYN%%SYM_ARROW%%R%  Launching freebuff...
+echo  %DIM%  It opens in the folder the script was started from.%R%
+echo.
+call :RESIZE_MAX
+call freebuff
+echo.
+echo  %BGGRN%%BLK%[ OK ]%R%  %BGRN%freebuff closed.%R%
+echo [%date% %time%] freebuff run >> "%LOGFILE%"
+:FREEBUFF_END
+echo.
+pause
+goto MENU
+
+rem ================================================================
+rem  20. PROGRAM COMPATIBILITY
 rem ================================================================
 :COMPAT
 cls
@@ -571,7 +966,7 @@ pause
 goto MENU
 
 rem ================================================================
-rem  13. COMPLETE DIAGNOSTICS
+rem  21. COMPLETE DIAGNOSTICS
 rem ================================================================
 :ALL
 cls
@@ -620,7 +1015,7 @@ pause
 goto MENU
 
 rem ================================================================
-rem  14. SYSTEM SUMMARY
+rem  22. SYSTEM SUMMARY
 rem ================================================================
 :SUMMARY
 cls
@@ -644,7 +1039,51 @@ pause
 goto MENU
 
 rem ================================================================
-rem  15. CHRIS TITUS TECH WINUTIL
+rem  23. CHECK FOR UPDATES
+rem ================================================================
+:UPDATECHECK
+cls
+call :RESIZE
+call :HEADER "CHECK FOR UPDATES"
+echo  %DIM%  Checking the GitHub repository for the latest release...%R%
+set "UPD_STATUS="
+for /f "delims=" %%v in ('powershell.exe -NoProfile -ExecutionPolicy Bypass -Command "[Net.ServicePointManager]::SecurityProtocol=[Net.SecurityProtocolType]::Tls12; try { $r=Invoke-RestMethod -Uri 'https://api.github.com/repos/sanguirIS/WinUtilKLENN/releases/latest' -Headers @{ 'User-Agent'='WinUtilKLENN/2.7.1' } -TimeoutSec 15; $localVersion='%VERSION%'.TrimStart('v'); $remoteVersion=$r.tag_name.TrimStart('v'); $lv=[version]$localVersion; $rv=[version]$remoteVersion; if ($rv -gt $lv) { 'NEW:'+$r.tag_name } elseif ($rv -lt $lv) { 'LOCAL' } else { 'SAME' } } catch { 'ERR' }"') do set "UPD_STATUS=%%v"
+echo.
+if "%UPD_STATUS%"=="SAME" goto UPD_SAME
+if "%UPD_STATUS%"=="LOCAL" goto UPD_LOCAL
+if "%UPD_STATUS:~0,4%"=="NEW:" goto UPD_NEW
+goto UPD_ERR
+:UPD_SAME
+echo  %BGRN%%SYM_OK%%R%  %WHT%You are running the latest version%R%  %BCYN%%VERSION%%R%
+echo [%date% %time%] Update check: up to date (%VERSION%) >> "%LOGFILE%"
+goto UPD_END
+:UPD_LOCAL
+echo  %BGRN%%SYM_OK%%R%  %WHT%You are running %VERSION%, which is newer than%R%
+echo  %WHT%the latest GitHub release. Nothing to update.%R%
+echo [%date% %time%] Update check: local version ahead of latest release >> "%LOGFILE%"
+goto UPD_END
+:UPD_NEW
+set "UPD_NEW=%UPD_STATUS:~4%"
+echo  %BYLW%!%R%  %WHT%A newer version is available:%R%  %BCYN%%UPD_NEW%%R%
+echo  %DIM%  You are running %VERSION%.%R%
+echo  %BYLW%?%R%  %WHT%Open the release page in your browser?%R%  %CYN%[ Y / N ]%R%
+choice /C YN /N
+if errorlevel 2 goto UPD_END
+start "" "https://github.com/sanguirIS/WinUtilKLENN/releases/latest"
+echo [%date% %time%] Update check: new version %UPD_NEW% >> "%LOGFILE%"
+goto UPD_END
+:UPD_ERR
+echo  %RED%%SYM_NO%%R%  %WHT%Could not check for updates.%R%
+echo  %DIM%  Check your internet connection, or visit:%R%
+echo  %CYN%      https://github.com/sanguirIS/WinUtilKLENN/releases%R%
+echo [%date% %time%] Update check failed >> "%LOGFILE%"
+:UPD_END
+echo.
+pause
+goto MENU
+
+rem ================================================================
+rem  24. CHRIS TITUS TECH WINUTIL
 rem ================================================================
 :WINUTIL
 cls
@@ -756,6 +1195,7 @@ echo.
 echo  %RULE_BIG%
 echo  %BGRN%%SYM_OK%%R%  %BWHT%WinUtilKLENN closed. Thank you!%R%
 echo  %DIM%   Log saved to: %LOGFILE%%R%
+echo  %DIM%   Tip: use option 23 to check for a newer version.%R%
 echo  %DIM%  WinUtilKLENN  Copyright (C) 2026 sanguirIS%R%
 echo  %DIM%  This program comes with ABSOLUTELY NO WARRANTY.%R%
 echo  %DIM%  Free software: redistribute under the GNU GPL v3 - see LICENSE%R%
@@ -820,3 +1260,101 @@ goto :eof
 echo   %RED%%SYM_NO%%R%  %BWHT%%~2%R%  %DIM%not running%R%
 goto :eof
 
+rem  Final verdict after a repair. %1 = FIXED or NOT, %2 = message.
+:VERDICT
+if /i "%~1"=="FIXED" goto VERDICT_OK
+echo  %BGRED%%WHT%[ NOT FIXED ]%R%  %RED%%~2%R%
+goto :eof
+:VERDICT_OK
+echo  %BGGRN%%BLK%[ FIXED ]%R%  %BGRN%%~2%R%
+goto :eof
+
+rem  Restart requirement after a repair. %1 = YES or NO.
+:RESTARTNOTE
+if /i "%~1"=="YES" goto RESTART_YES
+echo  %BGRN%%SYM_OK%%R%  %WHT%No restart needed - the fix is active now.%R%
+goto :eof
+:RESTART_YES
+echo  %BYLW%!%R%  %WHT%A restart is required to apply the changes.%R%
+goto :eof
+
+rem  Checks for pending-reboot flags; sets errorlevel 1 if a reboot is pending.
+:REBOOTCHECK
+powershell.exe -NoProfile -ExecutionPolicy Bypass -Command "$p=@('HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Component Based Servicing\RebootPending','HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\WindowsUpdate\Auto Update\RebootRequired'); $any=$false; foreach($x in $p){ if(Test-Path $x){ $any=$true } }; if($any){ Write-Host '   Pending restart detected.'; exit 1 } else { Write-Host '   No pending restart detected.'; exit 0 }"
+goto :eof
+
+rem  Makes sure an npm tool is installed. %1 = npm package, %2 = binary,
+rem  %3 = display label. Installs Node.js via winget if npm is missing,
+rem  installs the package globally if the binary is missing. Returns
+rem  errorlevel 0 when the tool is ready to launch.
+:NPMSETUP
+where npm >nul 2>&1
+if errorlevel 1 goto NPM_MISSING
+where "%~2" >nul 2>&1
+if errorlevel 1 goto NPM_INSTALL
+echo  %BGRN%%SYM_OK%%R%  %WHT%%~3%R%  %GRN%already installed - launching%R%
+echo [%date% %time%] NPM setup: %~3 found and ready >> "%LOGFILE%"
+exit /b 0
+:NPM_INSTALL
+echo  %BYLW%!%R%  %WHT%%~3%R%  %DIM%is not installed yet%R%
+echo  %BYLW%?%R%  %WHT%Install it globally via npm now?%R%  %CYN%[ Y / N ]%R%
+echo  %DIM%  Command:  npm install -g %~1 %R%
+choice /C YN /N
+if errorlevel 2 (
+    echo [%date% %time%] NPM setup: User cancelled installation of %~3 >> "%LOGFILE%"
+    exit /b 1
+)
+echo  %CYN%%SYM_ARROW%%R%  Installing %~1 (can take a minute)...
+echo [%date% %time%] NPM setup: Starting installation of %~1 >> "%LOGFILE%"
+npm install -g "%~1"
+if errorlevel 1 goto NPM_INSTALL_FAIL
+where "%~2" >nul 2>&1
+if errorlevel 1 goto NPM_INSTALL_FAIL
+echo  %BGGRN%%BLK%[ OK ]%R%  %BGRN%%~3%R%  %WHT%installed.%R%
+echo [%date% %time%] NPM setup: %~3 installed successfully >> "%LOGFILE%"
+exit /b 0
+:NPM_INSTALL_FAIL
+echo  %RED%%SYM_NO%%R%  %WHT%Install failed - check the internet connection.%R%
+echo [%date% %time%] NPM setup: Failed to install %~3 >> "%LOGFILE%"
+exit /b 1
+:NPM_MISSING
+echo  %RED%%SYM_NO%%R%  %WHT%npm / Node.js was not found on this system.%R%
+echo  %BYLW%?%R%  %WHT%Install Node.js LTS via winget now?%R%  %CYN%[ Y / N ]%R%
+choice /C YN /N
+if errorlevel 2 (
+    echo [%date% %time%] NPM setup: User cancelled Node.js installation >> "%LOGFILE%"
+    exit /b 1
+)
+echo  %CYN%%SYM_ARROW%%R%  Installing Node.js LTS (winget)...
+echo [%date% %time%] NPM setup: Starting Node.js LTS installation via winget >> "%LOGFILE%"
+winget install --id OpenJS.NodeJS.LTS -e --accept-source-agreements --accept-package-agreements
+if errorlevel 1 goto NPM_NODE_FAIL
+call :REFRESHPATH
+where npm >nul 2>&1
+if errorlevel 1 goto NPM_NODE_FAIL
+echo  %BGGRN%%BLK%[ OK ]%R%  %BGRN%Node.js installed - npm is ready.%R%
+echo [%date% %time%] NPM setup: Node.js installed successfully, npm available >> "%LOGFILE%"
+exit /b 0
+:NPM_NODE_FAIL
+echo  %RED%%SYM_NO%%R%  %WHT%Node.js could not be installed automatically.%R%
+echo  %DIM%  Install it from https://nodejs.org, then re-run this option.%R%
+echo [%date% %time%] NPM setup: Failed to install Node.js >> "%LOGFILE%"
+exit /b 1
+
+rem  Re-reads PATH from the registry into this session (used after an
+rem  automatic Node.js install so npm is found without a restart).
+:REFRESHPATH
+set "SYS_PATH="
+set "USR_PATH="
+for /f "skip=2 tokens=2,*" %%A in ('reg query "HKLM\SYSTEM\CurrentControlSet\Control\Session Manager\Environment" /v Path 2^>nul') do set "SYS_PATH=%%B"
+for /f "skip=2 tokens=2,*" %%A in ('reg query "HKCU\Environment" /v Path 2^>nul') do set "USR_PATH=%%B"
+if defined SYS_PATH set "PATH=%SYS_PATH%"
+if defined USR_PATH set "PATH=%PATH%;%USR_PATH%"
+goto :eof
+
+rem  Expands the console to the largest available size before launching
+rem  the full-screen TUI tools (yoinks / ghgrab / freebuff). The normal
+rem  :RESIZE routine snaps the window back after the screen redraws.
+:RESIZE_MAX
+powershell.exe -NoProfile -Command "try { $ui=(Get-Host).UI.RawUI; $max=$ui.MaxWindowSize; $b=$ui.BufferSize; $b.Width=$max.Width; $b.Height=$max.Height; $ui.BufferSize=$b; $w=$ui.WindowSize; $w.Width=$max.Width; $w.Height=$max.Height; $ui.WindowSize=$w } catch {}" >nul 2>&1
+goto :eof
