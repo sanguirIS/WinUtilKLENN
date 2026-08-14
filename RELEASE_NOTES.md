@@ -26,6 +26,18 @@ utility, no installation required.
   Node.js LTS via winget first.
 - Menu renumbered sequentially to 1–24 + Exit.
 
+## What's new in v2.6.0
+
+- **Check for Updates**: compares the installed version with the latest GitHub
+  release (semantic version comparison) and offers to open the release page.
+- **MAINTENANCE section**: Disk Cleanup (12), Restore Point (13), Battery
+  Report (14) and Restart / Shutdown (15).
+- **Clear verdicts**: every repair option ends with a `[ FIXED ]` / `[ NOT
+  FIXED ]` verdict and an explicit restart hint.
+- The version now lives in one `VERSION` variable that drives the menu badge
+  and the update check.
+- `WINUTIL_TEST=1` test mode that skips the UAC prompt for smoke tests.
+
 ## What it does
 
 24 guided menu options: Audio · Video Playback · Windows Media Player · Network &

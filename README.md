@@ -110,6 +110,10 @@ By using WinUtilKLENN you agree that you are responsible for your own system.
 
 ## Changelog
 
+### v2.7.1 — Bug fixes and improvements
+- **More robust update check:** version comparison now handles all version-number formats, and the GitHub API user-agent was updated for reliable checks.
+- **Better npm tool handling:** comprehensive logging for Node.js / npm installs, and a friendlier experience when an installation is cancelled.
+
 ### v2.7.0 — npm tools & new menu items
 - New **winget Upgrade** (16): lists outdated winget apps and upgrades them, with a FIXED / NOT FIXED verdict and a pending-reboot check.
 - New **yoinks** (17): downloads videos from YouTube, X, Instagram, TikTok and 1,800+ other sites.

@@ -39,7 +39,7 @@ rem         - Added "yoinks" (17): download videos from YouTube, X,
 rem           Instagram, TikTok and 1,800+ other sites (npm tool).
 rem         - Added "ghgrab" (18): browse and download files, folders or
 rem           release assets from GitHub repos without cloning (npm tool).
-rem         - Added "Freebuff - AI Help" (19): the free AI coding agent
+rem         - Added "Freebuff - AI Agent" (19): the free AI coding agent
 rem           CLI from freebuff.com (npm tool).
 rem         - Options 17-19 auto-install their npm tool on first use if
 rem           it is missing (Node.js via winget if npm is not present),
