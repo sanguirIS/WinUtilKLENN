@@ -28,9 +28,11 @@ CONTRIBUTING.md         This file
   WinUtilKLENN.cmd
   ```
 
-  Or, to test in a fresh console without the self-elevation restart:
+  Or, to run a quick smoke test without the UAC prompt (no system changes
+  are made), set the test-mode flag first:
 
   ```bat
+  set WINUTIL_TEST=1
   cmd /c "WinUtilKLENN.cmd"
   ```
 
@@ -43,15 +45,19 @@ Several options change real system state (services, drivers, the Windows Update 
 1. Run the script and confirm:
    - The window auto-sizes and the **66-char border fits on one line** (no wrap).
    - The warranty notice appears at the bottom of the menu.
-   - The menu shows all options **1–15** plus **0**.
+   - The menu shows all options **1–24** plus **0**.
 2. Press **Enter** with no input — the menu should simply redraw.
 3. Enter an invalid number — you should get the "Invalid selection" message, not a crash.
 4. Enter **0** — the END screen shows and the process exits.
 
 ### Per-option test
 
-- **Read-only options (2, 3, 12, 14, 13)** only print information — safe to run.
-- **Repair options (1, 4–11, 15)** ask **Y/N** before changing anything. Press **N** first to verify the prompts and navigation; press **Y** only when you are ready to let it act.
+- **Read-only options (2, 3, 20–23)** only print information — safe to run.
+- **Repair options (1, 4–13, 15, 16, 24)** ask **Y/N** before changing anything. Press **N** first to verify the prompts and navigation; press **Y** only when you are ready to let it act.
+- **Options 17–19 (yoinks, ghgrab, freebuff)** are npm tools: on first use they ask **Y/N** before installing the package (and Node.js via winget if npm is missing), then launch the tool. Testing them needs Node.js and an internet connection.
+- **Option 14 (Battery Report)** writes an HTML report to the log folder but changes no system settings.
+- **Option 15 (Restart / Shutdown)** really does restart or shut down the PC — answer carefully. It schedules a 30-second delay you can cancel with `shutdown /a`.
+- After a repair, confirm the **FIXED / NOT FIXED** verdict (`:VERDICT`) and the restart hint (`:RESTARTNOTE`) match what actually happened.
 - After any repair, check the log:
 
   ```bat
@@ -87,7 +93,7 @@ The console is capped at **68 columns**. Keep every echoed line short enough to 
 ### 4. Structure
 
 - Section banners use the `rem ====...====` style; keep the header comment's `WINUTILKLENN (vX.Y.Z)` in sync.
-- Use small `:SUBROUTINE` helpers with `goto :eof` (see `:HEADER`, `:SVCSTATUS`, `:CHECKSVC`, `:RESIZE`) instead of duplicating logic.
+- Use small `:SUBROUTINE` helpers with `goto :eof` (see `:HEADER`, `:SVCSTATUS`, `:CHECKSVC`, `:RESIZE`, `:VERDICT`, `:RESTARTNOTE`) instead of duplicating logic.
 - Prefix subroutine-local variables (e.g. `SVC*`, `GFX_*`, `WINUTIL_*`) and `set "VAR="` before use.
 - Never put `goto`/labels inside parenthesised blocks; keep `call :HELPER` calls at the top level of each screen.
 
@@ -111,10 +117,11 @@ echo [%date% %time%] Your action here >> "%LOGFILE%"
 
 ### 8. Versioning & changelog
 
-- Bump the version in **three** places:
+- Bump the version in **four** places:
   1. the header comment `rem  WINUTILKLENN   (vX.Y.Z)`,
-  2. the menu badge `[ vX.Y.Z ]`,
-  3. a new entry at the **top** of the CHANGELOG (newest first), matching the existing style.
+  2. the `set "VERSION=vX.Y.Z"` variable (it drives the menu badge and the **Check for Updates** option),
+  3. a new entry at the **top** of the CHANGELOG (newest first), matching the existing style,
+  4. the docs: this README's Changelog section and `RELEASE_NOTES.md`.
 - `X` for feature additions that change the menu, `Y` for fixes and internal changes.
 
 ## Commit messages

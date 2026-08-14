@@ -1,23 +1,39 @@
-# WinUtilKLENN v2.5.0
+# WinUtilKLENN v2.7.1
 
 Diagnostics and guided repair tools for Windows 10 / 11 — a single-file batch
 utility, no installation required.
 
-## What's new in v2.5.0
+## What's new in v2.7.1
 
-- **Polish pass** — no new menu options in this release:
-  - Option 11 label shortened to "BITS" so it matches its screen header and
-    the section title.
-  - Log-path line spacing unified across screens.
-  - Window behaviour unchanged: 68-column cap, 50-row window, buffer matches
-    the window (50 rows).
+- **Improved version comparison**: Fixed update check to properly handle all version number formats
+- **Better npm tool error handling**: Added comprehensive logging for Node.js and npm package installations
+- **Enhanced GitHub API compatibility**: Updated user-agent string for more reliable update checks
+- **Robust cancellation handling**: Better user experience when cancelling installations
+
+## What's new in v2.7.0
+
+- **winget Upgrade** (16): lists all outdated winget apps and upgrades them in
+  one go, with a FIXED / NOT FIXED verdict and a pending-reboot check.
+- **yoinks** (17): download videos from YouTube, X, Instagram, TikTok and
+  1,800+ other sites straight from the terminal.
+- **ghgrab** (18): browse and download files, folders or release assets from
+  any GitHub repo — no cloning needed.
+- **Freebuff - AI Agent** (19): launches the free AI coding agent CLI from
+  freebuff.com.
+- **Auto-installing npm tools:** options 17–19 check whether their npm tool is
+  installed; if not, they ask **Y/N**, install it with `npm install -g`, and
+  launch it directly. If npm / Node.js is missing, the script offers to install
+  Node.js LTS via winget first.
+- Menu renumbered sequentially to 1–24 + Exit.
 
 ## What it does
 
-15 guided menu options: Audio · Video Playback · Windows Media Player · Network &
+24 guided menu options: Audio · Video Playback · Windows Media Player · Network &
 Internet · DNS Flush · Bluetooth · Printer · Camera · Graphics Driver Reset ·
-Windows Update · BITS · Program Compatibility · Complete Diagnostics · System
-Summary · Chris Titus Tech WinUtil integration.
+Windows Update · BITS · Disk Cleanup · Restore Point · Battery Report · Restart /
+Shutdown · winget Upgrade · Yoinks · ghgrab · Freebuff · Program Compatibility ·
+Complete Diagnostics · System Summary · Check for Updates · Chris Titus Tech
+WinUtil integration.
 
 ## Run
 

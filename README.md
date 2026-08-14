@@ -9,12 +9,12 @@
 
 > **Repository:** https://github.com/sanguirIS/WinUtilKLENN
 
-WinUtilKLENN is a single-file batch utility that gives you a friendly, color-coded menu of 15 diagnostic and repair actions — audio, video, network, printers, cameras, Windows Update, and more — plus optional integration with the popular [Chris Titus Tech WinUtil](https://github.com/ChrisTitusTech/winutil) toolbox.
+WinUtilKLENN is a single-file batch utility that gives you a friendly, color-coded menu of 24 diagnostic, repair, and maintenance actions — audio, video, network, printers, cameras, Windows Update, disk cleanup, and more — plus npm-powered extras (video downloads, GitHub downloads, an AI coding agent) and optional integration with the popular [Chris Titus Tech WinUtil](https://github.com/ChrisTitusTech/winutil) toolbox.
 
-- **Single file** — no installation, no dependencies beyond what Windows ships with.
+- **Single file** — no installation; the built-in options only need what Windows ships with (options 17–19 auto-install their npm tools on first use).
 - **Runs as Administrator** — self-elevates via UAC when needed.
 - **Everything is logged** — every action is recorded to `%ProgramData%\WinUtilKLENN\WinUtilKLENN.log`.
-- **Auto-fitted console** — the window resizes to fit your screen (capped at 68×50) on every screen, so the menu border always renders cleanly.
+- **Auto-fitted console** — the window auto-resizes to fit your screen (capped at 68×50) and snaps back after every screen, so the menu border always renders cleanly.
 
 ---
 
@@ -33,10 +33,19 @@ WinUtilKLENN is a single-file batch utility that gives you a friendly, color-cod
 | 9 | Devices | Graphics Driver Reset | Restarts display adapter(s) via `pnputil` (screen may flicker) |
 | 10 | Windows Update | Windows Update | Service status, reboot flags, update-cache reset, DISM + SFC |
 | 11 | Windows Update | BITS | BITS service status and active jobs; service restart |
-| 12 | Other / Tools | Program Compatibility | Inspects an `.exe` file's version info |
-| 13 | Other / Tools | Run ALL Diagnostics | Runs the diagnostic portions of options 1–8 at once |
-| 14 | Other / Tools | System Summary | OS, RAM, disk, PowerShell version |
-| 15 | Other / Tools | Chris Titus Tech WinUtil | Guided setup of the WinUtil toolbox (see below) |
+| 12 | Maintenance | Disk Cleanup | Deletes temp files and empties the Recycle Bin |
+| 13 | Maintenance | Restore Point | Enables System Protection and creates a restore point |
+| 14 | Maintenance | Battery Report | Battery status plus a full `powercfg` HTML report |
+| 15 | Maintenance | Restart / Shutdown | Schedules a restart or shutdown with a 30-second delay |
+| 16 | Maintenance | winget Upgrade | Lists outdated winget apps and upgrades them |
+| 17 | Other / Tools | Yoinks - Video Downloader | npm tool - downloads videos from 1,800+ sites |
+| 18 | Other / Tools | ghgrab - GitHub Downloader | npm tool - grabs files/folders/release assets from GitHub |
+| 19 | Other / Tools | Freebuff - AI Agent | npm tool - free AI coding agent (freebuff.com) |
+| 20 | Other / Tools | Program Compatibility | Inspects an `.exe` file's version info |
+| 21 | Other / Tools | Run ALL Diagnostics | Runs the diagnostic checks from the media, network, device and update options at once |
+| 22 | Other / Tools | System Summary | OS, RAM, disk, PowerShell version |
+| 23 | Other / Tools | Check for Updates | Compares the installed version with the latest GitHub release |
+| 24 | Other / Tools | Chris Titus Tech WinUtil | Guided setup of the WinUtil toolbox (see below) |
 | 0 | — | Exit | Closes the tool |
 
 ## Requirements
@@ -51,9 +60,9 @@ WinUtilKLENN is a single-file batch utility that gives you a friendly, color-cod
 2. Type the number of the option you want and press **Enter**.
 3. Follow the on-screen prompts. Most options ask **Y/N** before making any changes.
 
-### Using Chris Titus Tech WinUtil (option 15)
+### Using Chris Titus Tech WinUtil (option 24)
 
-Option 15 walks you through, step by step:
+Option 24 walks you through, step by step:
 
 1. Creates `Documents\PowerShell` if it does not exist.
 2. Downloads `winutil.ps1` (pinned release **26.08.04** or latest) into that folder.
@@ -66,6 +75,7 @@ Option 15 walks you through, step by step:
 - **Self-elevation** — if not running as Administrator, the script restarts itself elevated through UAC. If you cancel the prompt, no changes are made.
 - **Logging** — every repair action, plus the applied console window size, is appended to `%ProgramData%\WinUtilKLENN\WinUtilKLENN.log`.
 - **Auto-sizing console** — the window grows to the largest size that fits your screen and console font (capped at 68×50, buffer matches the window). It re-applies on every screen so the 66-character border never wraps.
+- **Version check** — the version lives in one `VERSION` variable (shown in the menu badge). Option 23 compares it with the latest GitHub release and offers to open the release page when an update exists.
 
 ## Third-party tools & websites (and their licenses)
 
@@ -73,8 +83,12 @@ This tool invokes or integrates the following third-party resources. Each belong
 
 | Resource | Website / Source | License | Used for |
 |---|---|---|---|
-| Chris Titus Tech WinUtil | https://github.com/ChrisTitusTech/winutil · https://christitus.com/win | [MIT](https://github.com/ChrisTitusTech/winutil/blob/main/LICENSE) (© 2022 CT Tech Group LLC) | Option 15 — optional toolbox setup |
-| Microsoft Windows built-in tools (`DISM`, `SFC`, `netsh`, `ipconfig`, `pnputil`, `sc`, `winget`) | https://learn.microsoft.com | Subject to [Microsoft Software License Terms](https://www.microsoft.com/en-us/legal/terms-of-use) | Diagnostics and repair actions (options 1–14) |
+| Chris Titus Tech WinUtil | https://github.com/ChrisTitusTech/winutil · https://christitus.com/win | [MIT](https://github.com/ChrisTitusTech/winutil/blob/main/LICENSE) (© 2022 CT Tech Group LLC) | Option 24 — optional toolbox setup |
+| Node.js (npm) | https://nodejs.org | [MIT](https://github.com/nodejs/node/blob/main/LICENSE) | Runtime for options 17–19 (auto-installed via winget if missing) |
+| yoinks | https://www.npmjs.com/package/yoinks | [MIT](https://www.npmjs.com/package/yoinks) | Option 17 — video downloads |
+| ghgrab | https://www.npmjs.com/package/@ghgrab/ghgrab | See npm package page | Option 18 — GitHub file/release downloads |
+| freebuff | https://www.npmjs.com/package/freebuff | See npm package page | Option 19 — AI coding agent |
+| Microsoft Windows built-in tools (`DISM`, `SFC`, `netsh`, `ipconfig`, `pnputil`, `sc`, `winget`, `powercfg`, `shutdown`) | https://learn.microsoft.com | Subject to [Microsoft Software License Terms](https://www.microsoft.com/en-us/legal/terms-of-use) | Diagnostics and repair actions (options 1–16, 20–24) |
 | Microsoft PowerShell | https://github.com/PowerShell/PowerShell | [MIT](https://github.com/PowerShell/PowerShell/blob/main/LICENSE.txt) | Automation used throughout the script |
 
 > **Responsibility for third-party resources:** WinUtilKLENN only downloads, invokes, or points to these tools. The author of WinUtilKLENN is **not responsible** for the behaviour, availability, licensing, or content of any third-party website or tool. Running third-party scripts (including WinUtil) is at **your own discretion** — review them before executing.
@@ -95,6 +109,22 @@ WinUtilKLENN performs actions that change system configuration (services, driver
 By using WinUtilKLENN you agree that you are responsible for your own system.
 
 ## Changelog
+
+### v2.7.0 — npm tools & new menu items
+- New **winget Upgrade** (16): lists outdated winget apps and upgrades them, with a FIXED / NOT FIXED verdict and a pending-reboot check.
+- New **yoinks** (17): downloads videos from YouTube, X, Instagram, TikTok and 1,800+ other sites.
+- New **ghgrab** (18): browse and download files, folders or release assets from GitHub repos without cloning.
+- New **Freebuff - AI Agent** (19): launches the free AI coding agent CLI from freebuff.com.
+- **Auto-installing npm tools:** options 17–19 check whether their npm tool is installed; if not, they ask **Y/N**, install it (`npm install -g`), and launch it directly. If npm / Node.js is missing, the script offers to install Node.js LTS via winget first.
+- Menu renumbered sequentially to 1–24 + Exit.
+
+### v2.6.0 — Version and maintenance features
+- New **Check for Updates** option (19): compares the installed version with the latest GitHub release (semantic version comparison) and offers to open the release page.
+- New **MAINTENANCE** section: **Disk Cleanup** (12) deletes temp files and empties the Recycle Bin, **Restore Point** (13) enables System Protection and creates a restore point, **Battery Report** (14) shows battery status and generates a `powercfg` HTML report, **Restart / Shutdown** (15) schedules a restart or shutdown with a 30-second delay.
+- The version is now stored in one `VERSION` variable that drives the menu badge and the update check.
+- **Clear verdicts:** every repair option now ends with a `[ FIXED ]` / `[ NOT FIXED ]` verdict and an explicit restart hint, so you always know whether the issue was resolved and whether a reboot is needed.
+- Added a `WINUTIL_TEST=1` test mode that skips the UAC prompt for smoke tests.
+- Small wording fixes in on-screen messages and docs.
 
 ### v2.5.0 — Polish pass
 - Option 11 label shortened to "BITS" to match its screen header and section title; log-path line spacing unified across screens. No new menu options.
@@ -139,10 +169,9 @@ See [PUBLISHING.md](PUBLISHING.md) for step-by-step instructions to create the G
 
 Follow this checklist for every new version (e.g. `v2.5.0`):
 
-1. **Bump the version** in `WinUtilKLENN.cmd` — in all three places:
+1. **Bump the version** in `WinUtilKLENN.cmd`:
    - the header comment: `rem  WINUTILKLENN   (vX.Y.Z)`
-   - the script CHANGELOG entry at the top (newest first)
-   - the menu badge: `[ vX.Y.Z ]`
+   - the `set "VERSION=vX.Y.Z"` variable (drives the menu badge and Check for Updates)
    - a new entry at the **top** of the script's CHANGELOG (newest first)
 2. **Update `RELEASE_NOTES.md`** — new title and "What's new" section.
 3. **Mirror the changelog** in this README's [Changelog](#changelog) section.
