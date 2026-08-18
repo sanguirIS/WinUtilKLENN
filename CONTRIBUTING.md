@@ -2,7 +2,7 @@
 
 Thanks for helping out! This project is a single-file Windows batch utility. There is no build step, no dependencies, and no tests to run in the traditional sense — but there are important conventions that keep the script reliable, and a testing checklist that matters because this tool changes real system settings.
 
-By contributing, you agree that your contributions are licensed under the **GPL-3.0** (see [LICENSE](LICENSE)).
+By contributing, you agree that your contributions are licensed under the **MIT License** (see [LICENSE](LICENSE)).
 
 ---
 
@@ -12,7 +12,7 @@ By contributing, you agree that your contributions are licensed under the **GPL-
 WinUtilKLENN.cmd        The entire tool (single file)
 README.md               Overview, features, usage, third-party licenses
 THIRD_PARTY_LICENSES.md Full license texts of integrated tools
-LICENSE                 GPL-3.0
+LICENSE                 MIT
 CONTRIBUTING.md         This file
 ```
 
@@ -53,7 +53,8 @@ Several options change real system state (services, drivers, the Windows Update 
 ### Per-option test
 
 - **Read-only options (2, 3, 20–23)** only print information — safe to run.
-- **Repair options (1, 4–13, 15, 16, 24)** ask **Y/N** before changing anything. Press **N** first to verify the prompts and navigation; press **Y** only when you are ready to let it act.
+- **Repair options (1, 4–13, 15, 24)** ask **Y/N** before changing anything. Press **N** first to verify the prompts and navigation; press **Y** only when you are ready to let it act.
+- **Option 16 (winget Upgrade)** asks **1 / 2 / 0** after listing the updates: **1** = upgrade all, **2** = type one or more package Ids/Names (space/comma separated) to upgrade only those, **0** = cancel. Test with **0** and with a harmless Id first (e.g. `Git.Git`); a failed Id is retried as a Name and reported with a ✗ line plus failure counts in the verdict.
 - **Options 17–19 (yoinks, ghgrab, freebuff)** are npm tools: on first use they ask **Y/N** before installing the package (and Node.js via winget if npm is missing), then launch the tool. Testing them needs Node.js and an internet connection.
 - **Option 14 (Battery Report)** writes an HTML report to the log folder but changes no system settings.
 - **Option 15 (Restart / Shutdown)** really does restart or shut down the PC — answer carefully. It schedules a 30-second delay you can cancel with `shutdown /a`.
@@ -93,7 +94,7 @@ The console is capped at **68 columns**. Keep every echoed line short enough to 
 ### 4. Structure
 
 - Section banners use the `rem ====...====` style; keep the header comment's `WINUTILKLENN (vX.Y.Z)` in sync.
-- Use small `:SUBROUTINE` helpers with `goto :eof` (see `:HEADER`, `:SVCSTATUS`, `:CHECKSVC`, `:RESIZE`, `:VERDICT`, `:RESTARTNOTE`) instead of duplicating logic.
+- Use small `:SUBROUTINE` helpers with `goto :eof` (see `:HEADER`, `:SVCSTATUS`, `:CHECKSVC`, `:RESIZE`, `:VERDICT`, `:RESTARTNOTE`, `:WGUPGRADE`) instead of duplicating logic.
 - Prefix subroutine-local variables (e.g. `SVC*`, `GFX_*`, `WINUTIL_*`) and `set "VAR="` before use.
 - Never put `goto`/labels inside parenthesised blocks; keep `call :HELPER` calls at the top level of each screen.
 
