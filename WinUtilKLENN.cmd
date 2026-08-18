@@ -3,18 +3,26 @@ rem ================================================================
 rem  WinUtilKLENN - Diagnostics and guided repair tools for Windows 10/11.
 rem  Copyright (C) 2026 sanguirIS (https://github.com/sanguirIS)
 rem
-rem  This program is free software: you can redistribute it and/or modify
-rem  it under the terms of the GNU General Public License as published by
-rem  the Free Software Foundation, either version 3 of the License, or
-rem  (at your option) any later version.
+rem  MIT License - full text in the LICENSE file.
 rem
-rem  This program is distributed in the hope that it will be useful,
-rem  but WITHOUT ANY WARRANTY; without even the implied warranty of
-rem  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-rem  GNU General Public License for more details.
+rem  Permission is hereby granted, free of charge, to any person obtaining
+rem  a copy of this software and associated documentation files (the
+rem  "Software"), to deal in the Software without restriction, including
+rem  without limitation the rights to use, copy, modify, merge, publish,
+rem  distribute, sublicense, and/or sell copies of the Software, and to
+rem  permit persons to whom the Software is furnished to do so, subject to
+rem  the following conditions:
 rem
-rem  You should have received a copy of the GNU General Public License
-rem  along with this program.  If not, see <https://www.gnu.org/licenses/>.
+rem  The above copyright notice and this permission notice shall be
+rem  included in all copies or substantial portions of the Software.
+rem
+rem  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+rem  OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+rem  MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+rem  IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+rem  CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+rem  TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
+rem  SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 rem ================================================================
 chcp 65001 >nul
 setlocal EnableExtensions
@@ -22,11 +30,34 @@ title WinUtilKLENN
 color 0F
 
 rem ================================================================
-rem  WINUTILKLENN   (v2.7.1)
+rem  WINUTILKLENN   (v2.8.0)
 rem  Diagnostics and guided repair tools for Windows 10 / 11.
 rem  Run as Administrator for full functionality.
 rem ================================================================
 rem  CHANGELOG
+rem  v2.8.0 - Selective winget upgrades, bug fixes, MIT license:
+rem         - Option 16 (winget Upgrade): after the list of available
+rem           updates you can now choose [1] upgrade ALL packages,
+rem           [2] SELECT packages by typing one or more Ids or Names
+rem           (space/comma separated; each Id that fails is retried as
+rem           a Name), or [0] cancel. Selected packages upgrade one by
+rem           one with a per-package OK/fail line, a failure count, the
+rem           remaining-updates list and the pending-reboot check.
+rem         - Fixed: winget returns large NEGATIVE exit codes on failure
+rem           so "if errorlevel 1" never caught them. The Node.js install
+rem           check now verifies npm directly and the WinUtil install
+rem           check uses exit codes instead of English winget output.
+rem         - Fixed: :REFRESHPATH could corrupt PATH because reg query
+rem           returns raw REG_EXPAND_SZ text with unexpanded %SystemRoot%
+rem           references. PATH is now read expanded via PowerShell.
+rem         - Fixed: Disk Cleanup broke for user names containing an
+rem           apostrophe (TEMP is passed to PowerShell via $env:TEMP).
+rem         - Fixed: update check user-agent now uses the VERSION
+rem           variable (was hardcoded 2.7.1) and pre-release tags like
+rem           v2.8.0-beta no longer break the version comparison.
+rem         - Fixed: yoinks option 2 now checks that Windows Terminal
+rem           (wt.exe) is installed before launching it.
+rem         - Relicensed from GPL-3.0 to the MIT License.
 rem  v2.7.1 - Bug fixes and improvements:
 rem         - Fixed version comparison logic in update check to properly
 rem           handle all version number formats (x.y.z)
@@ -104,7 +135,7 @@ rem       - Friendly exit message if the UAC elevation prompt is cancelled.
 
 set "LOGDIR=%ProgramData%\WinUtilKLENN"
 set "LOGFILE=%LOGDIR%\WinUtilKLENN.log"
-set "VERSION=v2.7.1"
+set "VERSION=v2.8.0"
 
 if not exist "%LOGDIR%" mkdir "%LOGDIR%" >nul 2>&1
 
@@ -224,7 +255,7 @@ echo  %RULE_BIG%
 echo  %DIM%  Log: %LOGFILE%%R%
 echo  %DIM%  WinUtilKLENN  Copyright (C) 2026 sanguirIS%R%
 echo  %DIM%  This program comes with ABSOLUTELY NO WARRANTY.%R%
-echo  %DIM%  Free software: redistribute under the GNU GPL v3 - see LICENSE%R%
+echo  %DIM%  Open source under the MIT License - see LICENSE%R%
 echo.
 set "CHOICE="
 set /p "CHOICE=%BOLD%%BWHT%  Select an option %R%%CYN%[0-24]%R%%BOLD%%BWHT%: %R%"
@@ -679,7 +710,7 @@ echo  %DIM%  Only temp files are removed - personal files are untouched.%R%
 choice /C YN /N
 if errorlevel 2 goto MENU
 echo  %CYN%%SYM_ARROW%%R%  Cleaning temporary files...
-powershell.exe -NoProfile -ExecutionPolicy Bypass -Command "$paths=@('%TEMP%','%SystemRoot%\Temp'); foreach($p in $paths){ Get-ChildItem -LiteralPath $p -Force -ErrorAction SilentlyContinue | Remove-Item -Recurse -Force -ErrorAction SilentlyContinue }; Clear-RecycleBin -Force -ErrorAction SilentlyContinue"
+powershell.exe -NoProfile -ExecutionPolicy Bypass -Command "$paths=@($env:TEMP,'%SystemRoot%\Temp'); foreach($p in $paths){ Get-ChildItem -LiteralPath $p -Force -ErrorAction SilentlyContinue | Remove-Item -Recurse -Force -ErrorAction SilentlyContinue }; Clear-RecycleBin -Force -ErrorAction SilentlyContinue"
 echo.
 echo  %BWHT%%SYM_BULLET%%R%  %BOLD%Free space after cleanup:%R%
 powershell.exe -NoProfile -ExecutionPolicy Bypass -Command "Get-CimInstance Win32_LogicalDisk -Filter 'DriveType=3' | ForEach-Object { Write-Host ('   Disk '+$_.DeviceID+'  '+[math]::Round($_.FreeSpace/1GB,1)+' GB free') }"
@@ -801,17 +832,54 @@ call :HEADER "WINGET UPGRADE"
 winget --version >nul 2>&1
 if errorlevel 1 goto WINGET_MISSING
 echo  %BWHT%%SYM_BULLET%%R%  %BOLD%Available updates:%R%
-winget upgrade
+winget upgrade --accept-source-agreements
 echo.
-echo  %BYLW%?%R%  %WHT%Upgrade all packages now?%R%  %CYN%[ Y / N ]%R%
-echo  %DIM%  (winget upgrade --all - some apps may need to close)%R%
-choice /C YN /N
-if errorlevel 2 goto MENU
+echo  %BOLD%%CYN%  Choose what to upgrade:%R%
+echo    %BCYN%%BOLD%1%R%  %SYM_ARROW%  %WHT%ALL packages%R%  %DIM%(winget upgrade --all)%R%
+echo    %BCYN%%BOLD%2%R%  %SYM_ARROW%  %WHT%SELECT packages - type one or more Ids%R%
+echo    %BCYN%%BOLD%0%R%  %SYM_ARROW%  %WHT%Cancel - back to the main menu%R%
+echo.
+choice /C 120 /N
+if errorlevel 3 goto WINGET_CANCEL
+if errorlevel 2 goto WINGET_SELECT
 echo  %CYN%%SYM_ARROW%%R%  Upgrading all packages, this can take a while...
+echo  %DIM%  (some apps may need to close)%R%
 winget upgrade --all --accept-package-agreements --accept-source-agreements
+set "WG_ALLRC=%errorlevel%"
+echo [%date% %time%] winget upgrade --all run, exit code %WG_ALLRC% >> "%LOGFILE%"
+if not "%WG_ALLRC%"=="0" echo  %BYLW%!%R%  %WHT%winget reported exit code %WG_ALLRC%.%R%
+goto WINGET_AFTER
+:WINGET_SELECT
+echo.
+echo  %WHT%Type one or more package Ids, separated by spaces or commas.%R%
+echo  %DIM%  Use the Id column shown above (a Name also works). Example:%R%
+echo  %DIM%  Git.Git VideoLAN.VLC Mozilla.Firefox%R%
+echo.
+set "WG_LIST="
+set /p "WG_LIST=%BOLD%%BWHT%  Ids to upgrade: %R%"
+if "%WG_LIST%"=="" goto WINGET_CANCEL
+rem -- strip characters that could break the batch parser
+set "WG_LIST=%WG_LIST:"=%"
+set "WG_LIST=%WG_LIST:&=%"
+set "WG_LIST=%WG_LIST:|=%"
+set "WG_LIST=%WG_LIST:<=%"
+set "WG_LIST=%WG_LIST:>=%"
+set "WG_LIST=%WG_LIST:(=%"
+set "WG_LIST=%WG_LIST:)=%"
+set "WG_LIST=%WG_LIST:^=%"
+if "%WG_LIST%"=="" goto WINGET_CANCEL
+set /a WG_OK=0
+set /a WG_FAIL=0
+echo [%date% %time%] winget upgrade selected: %WG_LIST% >> "%LOGFILE%"
+for %%p in (%WG_LIST%) do call :WGUPGRADE %%p
+echo [%date% %time%] winget selected upgrades: %WG_OK% ok, %WG_FAIL% failed >> "%LOGFILE%"
+set /a WG_TOT=WG_OK+WG_FAIL
+if %WG_TOT%==0 goto WINGET_CANCEL
+if %WG_FAIL% gtr 0 goto WINGET_PARTIAL
+:WINGET_AFTER
 echo.
 echo  %BWHT%%SYM_BULLET%%R%  %BOLD%Remaining updates:%R%
-winget upgrade
+winget upgrade --accept-source-agreements
 echo.
 call :REBOOTCHECK
 if errorlevel 1 goto WINGET_RESTART
@@ -822,11 +890,27 @@ goto WINGET_END
 call :VERDICT FIXED "The winget upgrade finished."
 call :RESTARTNOTE YES
 goto WINGET_END
+:WINGET_PARTIAL
+echo.
+echo  %RED%%SYM_NO%%R%  %WG_FAIL% of %WG_TOT% selected packages could not be upgraded.%R%
+call :REBOOTCHECK
+if errorlevel 1 goto WINGET_PARTIAL_R
+call :VERDICT NOT "%WG_OK% upgraded, %WG_FAIL% failed - check the Ids."
+call :RESTARTNOTE NO
+goto WINGET_END
+:WINGET_PARTIAL_R
+call :VERDICT NOT "%WG_OK% upgraded, %WG_FAIL% failed - check the Ids."
+call :RESTARTNOTE YES
+goto WINGET_END
+:WINGET_CANCEL
+echo  %BYLW%!%R%  %WHT%Cancelled - no packages were upgraded.%R%
+echo [%date% %time%] winget upgrade cancelled >> "%LOGFILE%"
+goto WINGET_END
 :WINGET_MISSING
 echo  %RED%%SYM_NO%%R%  %WHT%winget is not installed.%R%
 echo  %DIM%  Install 'App Installer' from the Microsoft Store, then re-run.%R%
+echo [%date% %time%] winget upgrade failed - winget not installed >> "%LOGFILE%"
 :WINGET_END
-echo [%date% %time%] winget upgrade run >> "%LOGFILE%"
 echo.
 pause
 goto MENU
@@ -851,6 +935,7 @@ echo     %BCYN%%BOLD%2%R%  %SYM_ARROW%  %WHT%Windows Terminal - opens a new WT w
 echo     %BCYN%%BOLD%0%R%  %SYM_ARROW%  %WHT%Cancel - back to main menu%R%
 echo.
 set "YOINK_CHOICE="
+set "YOINK_NOWT=0"
 set /p "YOINK_CHOICE=%BOLD%%BWHT%  Select an option %R%%CYN%[0-2]%R%%BOLD%%BWHT%: %R%"
 if "%YOINK_CHOICE%"=="" goto YOINK_END
 if "%YOINK_CHOICE%"=="0" goto YOINK_END
@@ -868,16 +953,25 @@ if "%YOINK_CHOICE%"=="1" (
     echo  %CYN%%SYM_ARROW%%R%  Opening Windows Terminal and running yoinks...
     echo  %DIM%  Yoinks will launch in a new WT window.%R%
     echo  %DIM%  The script will return here only after the WT window closes.%R%
-    start "" /wait wt.exe new-tab --suppressApplicationTitle yoinks
+    where wt.exe >nul 2>&1
+    if errorlevel 1 set "YOINK_NOWT=1"
+    if "%YOINK_NOWT%"=="0" start "" /wait wt.exe new-tab --suppressApplicationTitle yoinks
 ) else (
     echo.
     echo  %BRED%!%R%  %WHT%Invalid selection.%R%
     pause
     goto YOINK_END
 )
+if "%YOINK_NOWT%"=="1" goto YOINK_WTMISS
 echo.
 echo  %BGGRN%%BLK%[ OK ]%R%  %BGRN%yoinks closed - videos are in your Downloads folder.%R%
 echo [%date% %time%] yoinks video downloader run >> "%LOGFILE%"
+goto YOINK_END
+:YOINK_WTMISS
+echo.
+echo  %RED%%SYM_NO%%R%  %WHT%Windows Terminal (wt.exe) was not found.%R%
+echo  %DIM%  Install it from the Microsoft Store, or use option 1 (CMD).%R%
+echo [%date% %time%] yoinks: Windows Terminal not found >> "%LOGFILE%"
 :YOINK_END
 echo.
 pause
@@ -1047,7 +1141,7 @@ call :RESIZE
 call :HEADER "CHECK FOR UPDATES"
 echo  %DIM%  Checking the GitHub repository for the latest release...%R%
 set "UPD_STATUS="
-for /f "delims=" %%v in ('powershell.exe -NoProfile -ExecutionPolicy Bypass -Command "[Net.ServicePointManager]::SecurityProtocol=[Net.SecurityProtocolType]::Tls12; try { $r=Invoke-RestMethod -Uri 'https://api.github.com/repos/sanguirIS/WinUtilKLENN/releases/latest' -Headers @{ 'User-Agent'='WinUtilKLENN/2.7.1' } -TimeoutSec 15; $localVersion='%VERSION%'.TrimStart('v'); $remoteVersion=$r.tag_name.TrimStart('v'); $lv=[version]$localVersion; $rv=[version]$remoteVersion; if ($rv -gt $lv) { 'NEW:'+$r.tag_name } elseif ($rv -lt $lv) { 'LOCAL' } else { 'SAME' } } catch { 'ERR' }"') do set "UPD_STATUS=%%v"
+for /f "delims=" %%v in ('powershell.exe -NoProfile -ExecutionPolicy Bypass -Command "[Net.ServicePointManager]::SecurityProtocol=[Net.SecurityProtocolType]::Tls12; try { $r=Invoke-RestMethod -Uri 'https://api.github.com/repos/sanguirIS/WinUtilKLENN/releases/latest' -Headers @{ 'User-Agent'='WinUtilKLENN/%VERSION%' } -TimeoutSec 15; $localVersion='%VERSION%'.TrimStart('v'); $remoteVersion=($r.tag_name.TrimStart('v') -replace '-.*$',''); $lv=[version]$localVersion; $rv=[version]$remoteVersion; if ($rv -gt $lv) { 'NEW:'+$r.tag_name } elseif ($rv -lt $lv) { 'LOCAL' } else { 'SAME' } } catch { 'ERR' }"') do set "UPD_STATUS=%%v"
 echo.
 if "%UPD_STATUS%"=="SAME" goto UPD_SAME
 if "%UPD_STATUS%"=="LOCAL" goto UPD_LOCAL
@@ -1149,9 +1243,9 @@ echo  %BYLW%?%R%  %WHT%Run:  winget install --id ChrisTitusTech.winutil%R%  %CYN
 choice /C YN /N
 if errorlevel 2 goto WINUTIL_STEP5
 echo  %CYN%%SYM_ARROW%%R%  Installing WinUtil via winget...
-winget install --id ChrisTitusTech.winutil --accept-package-agreements --accept-source-agreements
-winget show --id ChrisTitusTech.winutil 2>&1 | findstr /I /C:"No package found" >nul
-if not errorlevel 1 goto WINUTIL_WINFAIL
+winget install --id ChrisTitusTech.winutil -e --accept-package-agreements --accept-source-agreements
+winget show --id ChrisTitusTech.winutil -e --accept-source-agreements >nul 2>&1
+if %errorlevel% neq 0 goto WINUTIL_WINFAIL
 echo  %BGGRN%%BLK%[ OK ]%R%  %BGRN%WinUtil installed via winget.%R%
 echo [%date% %time%] winget install ChrisTitusTech.winutil >> "%LOGFILE%"
 goto WINUTIL_STEP5
@@ -1198,7 +1292,7 @@ echo  %DIM%   Log saved to: %LOGFILE%%R%
 echo  %DIM%   Tip: use option 23 to check for a newer version.%R%
 echo  %DIM%  WinUtilKLENN  Copyright (C) 2026 sanguirIS%R%
 echo  %DIM%  This program comes with ABSOLUTELY NO WARRANTY.%R%
-echo  %DIM%  Free software: redistribute under the GNU GPL v3 - see LICENSE%R%
+echo  %DIM%  Open source under the MIT License - see LICENSE%R%
 echo  %RULE_BIG%
 echo [%date% %time%] Closed >> "%LOGFILE%"
 endlocal
@@ -1328,7 +1422,8 @@ if errorlevel 2 (
 echo  %CYN%%SYM_ARROW%%R%  Installing Node.js LTS (winget)...
 echo [%date% %time%] NPM setup: Starting Node.js LTS installation via winget >> "%LOGFILE%"
 winget install --id OpenJS.NodeJS.LTS -e --accept-source-agreements --accept-package-agreements
-if errorlevel 1 goto NPM_NODE_FAIL
+rem  winget returns large negative exit codes on failure, so
+rem  "if errorlevel 1" misses them - verify npm directly instead.
 call :REFRESHPATH
 where npm >nul 2>&1
 if errorlevel 1 goto NPM_NODE_FAIL
@@ -1341,15 +1436,35 @@ echo  %DIM%  Install it from https://nodejs.org, then re-run this option.%R%
 echo [%date% %time%] NPM setup: Failed to install Node.js >> "%LOGFILE%"
 exit /b 1
 
+rem  Upgrades one winget package. %1 = Id (retried as a Name if the Id
+rem  is not found). Counts results in WG_OK / WG_FAIL. Runs at top
+rem  level via "call" so %errorlevel% is checked after each winget run.
+:WGUPGRADE
+echo.
+echo  %CYN%%SYM_ARROW%%R%  %BOLD%Upgrading: %~1%R%
+winget upgrade --id "%~1" -e --accept-package-agreements --accept-source-agreements
+if %errorlevel%==0 goto WGUP_OK
+echo  %BYLW%!%R%  %WHT%No exact Id match - retrying as a Name: %~1%R%
+winget upgrade --name "%~1" --accept-package-agreements --accept-source-agreements
+if %errorlevel%==0 goto WGUP_OK
+echo  %RED%%SYM_NO%%R%  %WHT%Could not upgrade: %~1%R%
+echo  %DIM%  Check the Id or Name in the list above.%R%
+set /a WG_FAIL+=1
+goto :eof
+:WGUP_OK
+echo  %BGRN%%SYM_OK%%R%  %WHT%Upgraded: %~1%R%
+set /a WG_OK+=1
+goto :eof
+
 rem  Re-reads PATH from the registry into this session (used after an
 rem  automatic Node.js install so npm is found without a restart).
+rem  PATH is read expanded via PowerShell because reg query returns the
+rem  raw REG_EXPAND_SZ text with unexpanded references, which cmd cannot
+rem  use directly. The current PATH is kept if the read fails.
 :REFRESHPATH
-set "SYS_PATH="
-set "USR_PATH="
-for /f "skip=2 tokens=2,*" %%A in ('reg query "HKLM\SYSTEM\CurrentControlSet\Control\Session Manager\Environment" /v Path 2^>nul') do set "SYS_PATH=%%B"
-for /f "skip=2 tokens=2,*" %%A in ('reg query "HKCU\Environment" /v Path 2^>nul') do set "USR_PATH=%%B"
-if defined SYS_PATH set "PATH=%SYS_PATH%"
-if defined USR_PATH set "PATH=%PATH%;%USR_PATH%"
+set "NEWPATH="
+for /f "delims=" %%P in ('powershell -NoProfile -Command "[Environment]::GetEnvironmentVariable('Path','Machine') + ';' + [Environment]::GetEnvironmentVariable('Path','User')"') do set "NEWPATH=%%P"
+if defined NEWPATH set "PATH=%NEWPATH%"
 goto :eof
 
 rem  Expands the console to the largest available size before launching

@@ -2,7 +2,7 @@
 
 This file collects the full license texts of third-party software that WinUtilKLENN downloads, invokes, or integrates with.
 
-WinUtilKLENN itself is licensed under the GNU General Public License v3.0 — see [LICENSE](LICENSE). The tools below are the property of their respective owners and are governed by **their own** license terms, reproduced here for reference and compliance.
+WinUtilKLENN itself is licensed under the MIT License — see [LICENSE](LICENSE). The tools below are the property of their respective owners and are governed by **their own** license terms, reproduced here for reference and compliance.
 
 ---
 
@@ -10,7 +10,7 @@ WinUtilKLENN itself is licensed under the GNU General Public License v3.0 — se
 
 - **Website / Source:** https://github.com/ChrisTitusTech/winutil · https://christitus.com/win
 - **License:** MIT License
-- **Used for:** Option 15 — optional WinUtil toolbox setup (download, winget install, launch)
+- **Used for:** Option 24 — optional WinUtil toolbox setup (download, winget install, launch)
 
 ```
 MIT License

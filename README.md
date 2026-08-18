@@ -1,6 +1,6 @@
 # WinUtilKLENN
 
-[![License: GPL-3.0](https://img.shields.io/badge/License-GPLv3-blue.svg)](LICENSE)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Platform: Windows](https://img.shields.io/badge/Platform-Windows-0078D6.svg)](README.md)
 [![GitHub: sanguirIS](https://img.shields.io/badge/GitHub-sanguirIS-181717?logo=github&logoColor=white)](https://github.com/sanguirIS)
 [![CI](https://github.com/sanguirIS/WinUtilKLENN/actions/workflows/sanity-check.yml/badge.svg)](https://github.com/sanguirIS/WinUtilKLENN/actions/workflows/sanity-check.yml)
@@ -37,7 +37,7 @@ WinUtilKLENN is a single-file batch utility that gives you a friendly, color-cod
 | 13 | Maintenance | Restore Point | Enables System Protection and creates a restore point |
 | 14 | Maintenance | Battery Report | Battery status plus a full `powercfg` HTML report |
 | 15 | Maintenance | Restart / Shutdown | Schedules a restart or shutdown with a 30-second delay |
-| 16 | Maintenance | winget Upgrade | Lists outdated winget apps and upgrades them |
+| 16 | Maintenance | winget Upgrade | Lists outdated winget apps; upgrade **all** or **selected** packages by Id/Name |
 | 17 | Other / Tools | Yoinks - Video Downloader | npm tool - downloads videos from 1,800+ sites |
 | 18 | Other / Tools | ghgrab - GitHub Downloader | npm tool - grabs files/folders/release assets from GitHub |
 | 19 | Other / Tools | Freebuff - AI Agent | npm tool - free AI coding agent (freebuff.com) |
@@ -59,6 +59,25 @@ WinUtilKLENN is a single-file batch utility that gives you a friendly, color-cod
 1. Right-click `WinUtilKLENN.cmd` → **Run as administrator** (or double-click and accept the UAC prompt).
 2. Type the number of the option you want and press **Enter**.
 3. Follow the on-screen prompts. Most options ask **Y/N** before making any changes.
+
+### Upgrading apps with winget (option 16)
+
+Option 16 first lists every available winget update, then asks what to upgrade:
+
+1. **ALL** — runs `winget upgrade --all` (accepts package/source agreements automatically).
+2. **SELECT** — you type one or more package **Ids** (or **Names**), separated by spaces or commas, e.g.
+
+   ```text
+   Git.Git VideoLAN.VLC Mozilla.Firefox
+   ```
+
+   Each package is upgraded individually with `winget upgrade --id <Id> -e`; an Id that
+   does not match is retried as a package **Name**. Every package gets its own
+   ✓ *Upgraded* / ✗ *Could not upgrade* line, and a failure summary with counts is shown
+   at the end, followed by the remaining-updates list, a FIXED / NOT FIXED verdict and
+   the pending-reboot check.
+
+0. **Cancel** — back to the menu, nothing is changed.
 
 ### Using Chris Titus Tech WinUtil (option 24)
 
@@ -109,6 +128,15 @@ WinUtilKLENN performs actions that change system configuration (services, driver
 By using WinUtilKLENN you agree that you are responsible for your own system.
 
 ## Changelog
+
+### v2.8.0 — Selective winget upgrades, bug fixes, MIT license
+- **winget Upgrade (16) now supports selective upgrades:** after listing the available updates you choose **[1] ALL**, **[2] SELECT** (type one or more package Ids or Names, space/comma separated) or **[0] Cancel**. Selected packages are upgraded one by one with per-package ✓/✗ results, an Id→Name fallback, a failure count, the remaining-updates list, a FIXED / NOT FIXED verdict and the pending-reboot check.
+- **Fixed: winget failure detection.** winget returns large *negative* exit codes on failure, so `if errorlevel 1` never caught them — the Node.js install check now verifies npm directly, and the WinUtil install check uses exit codes instead of matching English winget output (locale-independent).
+- **Fixed: PATH refresh.** `:REFRESHPATH` could corrupt `PATH` because `reg query` returns raw `REG_EXPAND_SZ` text with unexpanded `%SystemRoot%` references; `PATH` is now read fully expanded via PowerShell.
+- **Fixed: Disk Cleanup** broke for user names containing an apostrophe (`TEMP` is passed to PowerShell via `$env:TEMP` instead of string splicing).
+- **Fixed: update check** — the GitHub API user-agent now uses the real script version (was hardcoded `2.7.1`) and pre-release tags (e.g. `v2.8.0-beta`) no longer break the version comparison.
+- **Fixed: yoinks option 2** now checks that Windows Terminal (`wt.exe`) is installed before launching it.
+- **Relicensed from GPL-3.0 to the MIT License.**
 
 ### v2.7.1 — Bug fixes and improvements
 - **More robust update check:** version comparison now handles all version-number formats, and the GitHub API user-agent was updated for reliable checks.
@@ -193,7 +221,7 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for the development setup, testing checkl
 
 ## License
 
-WinUtilKLENN is released under the **GNU General Public License v3.0** (GPL-3.0) — see [LICENSE](LICENSE).
+WinUtilKLENN is released under the **MIT License** — see [LICENSE](LICENSE).
 
 ## Author
 
