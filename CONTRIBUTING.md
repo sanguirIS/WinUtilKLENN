@@ -43,63 +43,71 @@ Several options change real system state (services, drivers, the Windows Update 
 ### Quick smoke test (every change)
 
 1. Run the script and confirm:
-   - The window auto-sizes and the **66-char border fits on one line** (no wrap).
+   - The window auto-fits the screen and the **box stays inside the window** (no border wrap).
+   - Prose word-wraps inside the box. Drag the window narrower and open another screen: the box and the text reflow.
+   - Dracula colours show (pink title, cyan accents, green success, red failure). Background is `#282A36` in Windows Terminal.
    - The warranty notice appears at the bottom of the menu.
-   - The menu shows all options **1–24** plus **0**.
-2. Press **Enter** with no input — the menu should simply redraw.
-3. Enter an invalid number — you should get the "Invalid selection" message, not a crash.
-4. Enter **0** — the END screen shows and the process exits.
+   - The menu shows options **1-25** plus **0** (25 is Security Check).
+2. Press **Enter** with no input. The menu should simply redraw.
+3. Enter an invalid number. You should get the "Invalid selection" message, not a crash. The echoed value is digits only.
+4. Enter **0**. The END screen shows the warranty notice and the process exits.
+
+`set WINUTIL_TEST=1` skips the UAC prompt and the one-second boot pause. It does not skip repairs if you confirm them.
 
 ### Per-option test
 
-- **Read-only options (2, 3, 20–23)** only print information — safe to run.
-- **Repair options (1, 4–13, 15, 16, 24)** ask **Y/N** before changing anything. Press **N** first to verify the prompts and navigation; press **Y** only when you are ready to let it act.
-- **Options 17–19 (yoinks, ghgrab, freebuff)** are npm tools: on first use they ask **Y/N** before installing the package (and Node.js via winget if npm is missing), then launch the tool. Testing them needs Node.js and an internet connection.
+- **Read-only options (2, 3, 20-23)** only print information. Safe to run.
+- **Repair options (1, 4-13, 15, 16, 24, 25)** ask **Y/N** before changing anything. Press **N** first to verify the prompts and navigation; press **Y** only when you are ready to let it act.
+- **Options 17-19 (yoinks, ghgrab, freebuff)** are npm tools. On first use they ask **Y/N** before installing the package (and Node.js via winget if npm is missing), then launch the tool. Testing them needs Node.js and an internet connection.
 - **Option 14 (Battery Report)** writes an HTML report to the log folder but changes no system settings.
-- **Option 15 (Restart / Shutdown)** really does restart or shut down the PC — answer carefully. It schedules a 30-second delay you can cancel with `shutdown /a`.
-- After a repair, confirm the **FIXED / NOT FIXED** verdict (`:VERDICT`) and the restart hint (`:RESTARTNOTE`) match what actually happened.
+- **Option 15 (Restart / Shutdown)** really does restart or shut down the PC. Answer carefully. It schedules a 30-second delay you can cancel with `shutdown /a`.
+- **Option 25 (Security Check)** can start a Defender quick scan if you answer **Y**.
+- After a repair, confirm the **FIXED / NOT FIXED** verdict (`:VERDICT`) and the restart hint (`:RESTARTNOTE`) match what actually happened. A non-zero winget exit must not say FIXED.
 - After any repair, check the log:
 
   ```bat
   type "%ProgramData%\WinUtilKLENN\WinUtilKLENN.log"
   ```
 
-  You should see a timestamped entry for the action and a `Window size applied: WxH` line per screen.
+  You should see a timestamped entry for the action and a `Window WxH box ... theme Dracula` line when the size changes.
 
-### Checking the console resize
+### Checking the layout
 
-The `:RESIZE` routine runs on startup and after every screen. Verify it by:
+`:FIT` runs on startup and on every screen (`:HEADER`, the menu, and the exit screen). It reads `mode con`, with a PowerShell fallback when the words Columns/Lines are translated.
 
-```bat
-powershell -NoProfile -Command "$ui=(Get-Host).UI.RawUI; $ui.MaxWindowSize"
-```
-
-The window must never exceed `68` columns (hard cap) or the screen maximum, whichever is smaller. The window height auto-fits the screen up to `50` rows, and the buffer height is set to match the window (no scrollback beyond the visible area).
+- Comfortable window: about **72-104** columns and up to **50** rows.
+- Box width follows the window, capped at **120**, and never wider than the window.
+- Buffer height stays at **2000** so long diagnostics can be scrolled.
+- Below 60 columns or above 150, the font is adjusted once so text stays usable.
 
 ## Code style
 
 ### 1. Keep the source pure ASCII
 
-**cmd.exe misparses multi-byte characters stored in the file.** Do **not** paste Unicode box-drawing characters (`─`, `►`, `✓`, `✗`, `●`) into `echo` lines. All glyphs are generated at runtime by the *Icons and rules* block near the top of the script and stored in `%SYM_*%` / `%RULE_*%` variables — use those.
+**cmd.exe misparses multi-byte characters stored in the file.** Do **not** paste Unicode box-drawing characters into `echo` lines. Glyphs are generated at runtime by `:GLYPHS` and stored in `%SYM_*%` / `%BOX_*%`. If the horizontal glyph is not a single character, the box falls back to ASCII `+`, `-`, and `:`.
+
+Do not use `echo(`. The CI parenthesis counter treats `(` as a block opener. Use `echo.` for a blank line.
 
 ### 2. Use the ANSI colour variables
 
-Colours are defined once at the top (`%R%`, `%RED%`, `%GRN%`, `%CYN%`, `%BOLD%`, `%DIM%`, …). Never hardcode escape sequences; always reset with `%R%` at the end of every line.
+Colours are defined once at the top. The names used in screens are `%R%`, `%RED%`, `%GREEN%`, `%CYAN%`, `%ORG%`, `%YLW%`, `%PINK%`, `%PUR%`, `%COM%`, `%FG%`, `%BOLD%`, `%DIM%`. `%CYAN%` and `%GREEN%` are aliases of the Dracula cyan and green sequences. Never hardcode escape sequences. `%R%` resets and reapplies the Dracula foreground and background.
 
-### 3. Fit the window: keep lines short
+### 3. Wrap prose; do not hard-code a 66-column line
 
-The console is capped at **68 columns**. Keep every echoed line short enough to render without wrapping — aim for **≤ 66 characters** of visible text.
+The window is not capped at 68 columns. Put sentences in `MSG` and `call :SAY` (or `call :SAY "text"`). `:SAY` word-wraps to the live inner width and draws both side borders. Keep `goto` and labels out of parenthesised blocks. PowerShell tables should end with `Format-Table -Wrap | Out-String -Width $env:WUK_W`.
+
+`:ASK` ends with `choice`. The next line must test `errorlevel`. Do not `call` anything between them.
 
 ### 4. Structure
 
-- Section banners use the `rem ====...====` style; keep the header comment's `WINUTILKLENN (vX.Y.Z)` in sync.
-- Use small `:SUBROUTINE` helpers with `goto :eof` (see `:HEADER`, `:SVCSTATUS`, `:CHECKSVC`, `:RESIZE`, `:VERDICT`, `:RESTARTNOTE`) instead of duplicating logic.
-- Prefix subroutine-local variables (e.g. `SVC*`, `GFX_*`, `WINUTIL_*`) and `set "VAR="` before use.
-- Never put `goto`/labels inside parenthesised blocks; keep `call :HELPER` calls at the top level of each screen.
+- Section banners use the `rem ====...====` style. Keep the header comment's `WINUTILKLENN vX.Y.Z` in sync with `VERSION`.
+- Use the helpers (`:HEADER`, `:SAY`, `:FIT`, `:SVCSTATUS`, `:CHECKSVC`, `:VERDICT`, `:RESTARTNOTE`, `:ASK`, `:WORK`) instead of duplicating logic.
+- Prefix subroutine-local variables and `set "VAR="` before use.
+- Never put `goto` or labels inside parenthesised blocks.
 
 ### 5. Locale safety
 
-Windows is locale-sensitive. Avoid parsing English command output directly — prefer the existing patterns (`sc query` with `findstr /C:"STATE"` and `: 4  ` matches, PowerShell `-ErrorAction SilentlyContinue`).
+Windows is locale-sensitive. Avoid parsing English command output directly. Prefer the existing patterns (`sc query` with `findstr /C:"STATE"` and `: 4  ` matches, PowerShell `-ErrorAction SilentlyContinue`).
 
 ### 6. Log every action
 
@@ -111,18 +119,21 @@ echo [%date% %time%] Your action here >> "%LOGFILE%"
 
 ### 7. Adding a new menu option
 
-1. Add the option line to `:MENU` and renumber if needed.
-2. Add a `choice` / `set /p` handler and a `goto` target.
+1. Add the option line to `:MENU`. Keep numbers stable if you can; 25 is Security, 24 is WinUtil.
+2. Add a `set /p` handler and a `goto` target. Run input through `:SANITIZE` if it is a menu number.
 3. Update the version (see below) and the README features table.
 
-### 8. Versioning & changelog
+### 8. Versioning and changelog
 
 - Bump the version in **four** places:
-  1. the header comment `rem  WINUTILKLENN   (vX.Y.Z)`,
-  2. the `set "VERSION=vX.Y.Z"` variable (it drives the menu badge and the **Check for Updates** option),
-  3. a new entry at the **top** of the CHANGELOG (newest first), matching the existing style,
-  4. the docs: this README's Changelog section and `RELEASE_NOTES.md`.
-- `X` for feature additions that change the menu, `Y` for fixes and internal changes.
+  1. the header comment `rem  WinUtilKLENN vX.Y.Z`,
+  2. the `set "VERSION=vX.Y.Z"` variable (menu badge and Check for Updates),
+  3. a new entry at the **top** of the script CHANGELOG comment (newest first),
+  4. the docs: README Changelog, and `RELEASE_NOTES.md`.
+- Do not rewrite a published GitHub release. Source ahead of the latest tag is a new version. The Releases page currently has **6** releases; **v2.8.0** is Latest.
+- Keep the license **GPL-3.0**.
+
+Embedded PowerShell must be a single `-Command "..."` with **no** double quote inside the string. CI strips `%VAR%` and parses the result. A bare `|` inside that string is fine for PowerShell, but a bare `|` in an `echo` line is a cmd pipe. Do not set an ASCII bar glyph to `|`.
 
 ## Commit messages
 
@@ -131,17 +142,19 @@ Short, imperative, prefixed by area when it helps:
 ```text
 Add option 16: Storage Sense diagnostics
 Fix elevation fall-through when already admin
-docs: document the :RESIZE routine in README
+docs: document the :FIT routine in README
 ```
 
 ## Definition of done
 
-- [ ] Script still runs, border fits, menu renders all options.
-- [ ] New/changed options tested with **N** (navigation) and, where safe, **Y**.
+- [ ] Script still runs. Box fits. Text wraps. Menu renders options 0-25.
+- [ ] Dracula colours still come from the variables, not hardcoded sequences.
+- [ ] New or changed options tested with **N** (navigation) and, where safe, **Y**.
 - [ ] Log lines written correctly.
 - [ ] Version bumped and changelog updated.
 - [ ] README updated if the menu, behaviour, or dependencies changed.
-- [ ] File kept ASCII, CRLF (`.gitattributes` does this automatically on checkout).
+- [ ] File kept ASCII and CRLF (`.gitattributes` does this on checkout).
+- [ ] Parentheses balance, and every `goto` / `call :` target exists.
 
 ## Questions?
 
