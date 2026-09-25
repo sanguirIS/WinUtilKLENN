@@ -5,7 +5,7 @@ Step-by-step guide to publish this repository to GitHub: create the repo, push w
 ## 0. Prerequisites
 
 - A GitHub account (https://github.com)
-- Git installed locally (this repo is already initialized on `main`; tags `v2.4.1` through `v2.6.0` exist)
+- Git installed locally (this repo is already initialized on `main`; published GitHub releases are v2.4.1, v2.4.2, v2.4.3, v2.5.0, v2.7.1, and v2.8.0 (6 releases, v2.8.0 latest))
 
 The repository **must exist on GitHub before the push works** — Git refuses to push to a repo that doesn't exist yet.
 

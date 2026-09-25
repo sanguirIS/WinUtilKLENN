@@ -10,7 +10,7 @@ WinUtilKLENN itself is licensed under the GNU General Public License v3.0 — se
 
 - **Website / Source:** https://github.com/ChrisTitusTech/winutil · https://christitus.com/win
 - **License:** MIT License
-- **Used for:** Option 15 — optional WinUtil toolbox setup (download, winget install, launch)
+- **Used for:** Option 24 — optional WinUtil toolbox setup (download, winget install, launch)
 
 ```
 MIT License

@@ -1,20 +1,28 @@
 # WinUtilKLENN
 
-[![License: GPL-3.0](https://img.shields.io/badge/License-GPLv3-blue.svg)](LICENSE)
+[![License: GPL-3.0](https://img.shields.io/badge/License-GPL--3.0-blue.svg)](LICENSE)
 [![Platform: Windows](https://img.shields.io/badge/Platform-Windows-0078D6.svg)](README.md)
 [![GitHub: sanguirIS](https://img.shields.io/badge/GitHub-sanguirIS-181717?logo=github&logoColor=white)](https://github.com/sanguirIS)
 [![CI](https://github.com/sanguirIS/WinUtilKLENN/actions/workflows/sanity-check.yml/badge.svg)](https://github.com/sanguirIS/WinUtilKLENN/actions/workflows/sanity-check.yml)
+[![Latest release](https://img.shields.io/github/v/release/sanguirIS/WinUtilKLENN?label=Latest)](https://github.com/sanguirIS/WinUtilKLENN/releases/tag/v2.8.0)
 
-**Diagnostics and guided repair tools for Windows 10 / 11.**
+**[README](https://github.com/sanguirIS/WinUtilKLENN#)** · **[Contributing](CONTRIBUTING.md)** · **[GPL-3.0 license](LICENSE)** · **[Releases](https://github.com/sanguirIS/WinUtilKLENN/releases)** (6) · **[v2.8.0 Latest](https://github.com/sanguirIS/WinUtilKLENN/releases/tag/v2.8.0)**
+
+**Diagnostics and guided repair tools for Windows 10 / 11.** Dracula theme, auto-fitting text, and word-wrapped boxes.
 
 > **Repository:** https://github.com/sanguirIS/WinUtilKLENN
+>
+> **Current source:** v2.9.0 (this tree). **Latest published release:** [v2.8.0](https://github.com/sanguirIS/WinUtilKLENN/releases/tag/v2.8.0).
 
-WinUtilKLENN is a single-file batch utility that gives you a friendly, color-coded menu of 24 diagnostic, repair, and maintenance actions — audio, video, network, printers, cameras, Windows Update, disk cleanup, and more — plus npm-powered extras (video downloads, GitHub downloads, an AI coding agent) and optional integration with the popular [Chris Titus Tech WinUtil](https://github.com/ChrisTitusTech/winutil) toolbox.
+WinUtilKLENN is a single-file batch utility with a Dracula-colored menu of 25 diagnostic, repair, and maintenance actions: audio, video, network, printers, cameras, Windows Update, disk cleanup, a security check, and more. It also launches npm extras (video downloads, GitHub downloads, an AI coding agent) and can set up the [Chris Titus Tech WinUtil](https://github.com/ChrisTitusTech/winutil) toolbox.
 
-- **Single file** — no installation; the built-in options only need what Windows ships with (options 17–19 auto-install their npm tools on first use).
-- **Runs as Administrator** — self-elevates via UAC when needed.
-- **Everything is logged** — every action is recorded to `%ProgramData%\WinUtilKLENN\WinUtilKLENN.log`.
-- **Auto-fitted console** — the window auto-resizes to fit your screen (capped at 68×50) and snaps back after every screen, so the menu border always renders cleanly.
+- **Single file** - no installation; the built-in options only need what Windows ships with (options 17-19 auto-install their npm tools on first use).
+- **Runs as Administrator** - self-elevates via UAC. Paths with spaces or apostrophes survive the relaunch, and the working folder is kept.
+- **Everything is logged** - every action is recorded to `%ProgramData%\WinUtilKLENN\WinUtilKLENN.log` (rotated at 512 KB).
+- **Dracula theme** - background `#282A36`, foreground `#F8F8F2`, plus pink, purple, cyan, green, red, orange, and yellow from the [Dracula palette](https://draculatheme.com/). Not affiliated with the Dracula Theme project.
+- **Responsive boxes** - every screen is framed. The box follows the console width (up to 120 columns). Prose word-wraps inside the box. Tables wrap to the same width.
+- **Automated text size** - on startup the font and window fit the screen (about 72-104 columns and up to 50 rows). Drag the window and the next screen reflows. A very narrow or very wide window refits the font automatically.
+- **Scrollback kept** - the visible window fits the screen; the buffer stays at 2,000 rows so long diagnostics are not thrown away.
 
 ---
 
@@ -37,7 +45,7 @@ WinUtilKLENN is a single-file batch utility that gives you a friendly, color-cod
 | 13 | Maintenance | Restore Point | Enables System Protection and creates a restore point |
 | 14 | Maintenance | Battery Report | Battery status plus a full `powercfg` HTML report |
 | 15 | Maintenance | Restart / Shutdown | Schedules a restart or shutdown with a 30-second delay |
-| 16 | Maintenance | winget Upgrade | Lists outdated winget apps and upgrades them |
+| 16 | Maintenance | winget Upgrade | Lists outdated winget apps; upgrade all, or select Ids/Names |
 | 17 | Other / Tools | Yoinks - Video Downloader | npm tool - downloads videos from 1,800+ sites |
 | 18 | Other / Tools | ghgrab - GitHub Downloader | npm tool - grabs files/folders/release assets from GitHub |
 | 19 | Other / Tools | Freebuff - AI Agent | npm tool - free AI coding agent (freebuff.com) |
@@ -46,6 +54,7 @@ WinUtilKLENN is a single-file batch utility that gives you a friendly, color-cod
 | 22 | Other / Tools | System Summary | OS, RAM, disk, PowerShell version |
 | 23 | Other / Tools | Check for Updates | Compares the installed version with the latest GitHub release |
 | 24 | Other / Tools | Chris Titus Tech WinUtil | Guided setup of the WinUtil toolbox (see below) |
+| 25 | Security | Security Check | Defender status, firewall profiles, UAC level, optional quick scan |
 | 0 | — | Exit | Closes the tool |
 
 ## Requirements
@@ -72,10 +81,12 @@ Option 24 walks you through, step by step:
 
 ## How it works
 
-- **Self-elevation** — if not running as Administrator, the script restarts itself elevated through UAC. If you cancel the prompt, no changes are made.
-- **Logging** — every repair action, plus the applied console window size, is appended to `%ProgramData%\WinUtilKLENN\WinUtilKLENN.log`.
-- **Auto-sizing console** — the window grows to the largest size that fits your screen and console font (capped at 68×50, buffer matches the window). It re-applies on every screen so the 66-character border never wraps.
-- **Version check** — the version lives in one `VERSION` variable (shown in the menu badge). Option 23 compares it with the latest GitHub release and offers to open the release page when an update exists.
+- **Self-elevation** - if not running as Administrator, the script restarts itself elevated through UAC, passing the script path and the current folder. A path with spaces or an apostrophe does not break, and the tool does not land in `System32`. If you cancel the prompt, no changes are made.
+- **Logging** - every repair action, plus the applied console size, is appended to `%ProgramData%\WinUtilKLENN\WinUtilKLENN.log`. The log rotates at 512 KB.
+- **Dracula theme** - truecolor ANSI on every UI line, a remapped 16-color console palette, and terminal background/foreground sequences so both the classic console and Windows Terminal pick up the palette.
+- **Responsive layout** - `:FIT` runs on every screen. It reads the live console size, rebuilds the box, and word-wraps prose with `:SAY`. PowerShell tables use `Format-Table -Wrap` at the same inner width. Startup chooses a readable font and a window that fits the screen. If you drag the window below 60 or past 150 columns, the font is adjusted once so text stays usable.
+- **Version check** - the version lives in one `VERSION` variable (shown in the menu). Option 23 compares it with the latest GitHub release (pre-release suffixes are ignored) and offers to open the release page when an update exists.
+
 
 ## Third-party tools & websites (and their licenses)
 
@@ -109,6 +120,36 @@ WinUtilKLENN performs actions that change system configuration (services, driver
 By using WinUtilKLENN you agree that you are responsible for your own system.
 
 ## Changelog
+
+### v2.9.0 — Dracula theme, responsive text, bug fixes
+
+Current source version. Not yet a GitHub release; the latest published tag is still [v2.8.0](https://github.com/sanguirIS/WinUtilKLENN/releases/tag/v2.8.0).
+
+- **Dracula theme** on every screen: palette, truecolor, and terminal background.
+- **Responsive boxes and word wrap.** Borders follow the console. Prose wraps on spaces inside the box. Tables wrap to the same width. The font and window auto-fit the screen, and extreme resizes refit the font.
+- **Scrollback restored** (2,000 rows) so `ipconfig`, DISM, and winget output can be scrolled.
+- **Security check** stays option 25 (Defender, firewall, UAC, optional quick scan).
+- **Selective winget upgrades** (option 16): all packages, or one or more Ids/Names, with a per-package result and a FIXED / NOT FIXED verdict.
+- **Elevation** uses the script path from the environment, so spaces and apostrophes survive, and the working directory is preserved.
+- **winget negative exit codes** are no longer treated as success. Node.js install success is verified by finding `npm`, then the requested package is installed.
+- **PATH refresh** reads expanded values, not raw `REG_EXPAND_SZ`.
+- **Disk cleanup** passes temp paths through `$env:TEMP` / `$env:SystemRoot`.
+- **Windows Update cache reset** waits for services to stop, then checks that the renames actually happened, and always starts the services again.
+- **Update check** uses this script's version and ignores pre-release tag suffixes.
+- **yoinks** checks for Windows Terminal before option 2, and option 1 waits until the command window closes.
+- **Invalid menu input** is reduced to digits and displayed, never executed.
+- **Accent colours** `CYAN` and `GREEN` are defined, so status arrows and success text use the Dracula palette.
+- **Printer repair** stops the spooler, deletes stuck jobs in the spool folder, then starts the spooler again. Locked files are reported as NOT FIXED instead of success.
+- **winget --all** reports NOT FIXED when winget returns a non-zero exit code.
+- The box never grows wider than the console window.
+- License remains **GPL-3.0**.
+
+### v2.8.0 — Selective winget upgrades and fixes
+
+Published release: [v2.8.0](https://github.com/sanguirIS/WinUtilKLENN/releases/tag/v2.8.0) (latest on the Releases page).
+
+- Option 16 can upgrade all winget packages or a typed list of Ids/Names.
+- winget failure codes, PATH refresh, disk-cleanup apostrophes, the update-check user-agent, and the yoinks Windows Terminal check were fixed in that tag.
 
 ### v2.7.1 — Bug fixes and improvements
 - **More robust update check:** version comparison now handles all version-number formats, and the GitHub API user-agent was updated for reliable checks.
@@ -149,7 +190,7 @@ By using WinUtilKLENN you agree that you are responsible for your own system.
 - The console window now auto-sizes to the largest size that fits the current screen and console font (capped at 68×40) so the 66-char border always fits on a single line.
 - The size is re-applied after every screen so the window snaps back if dragged mid-session, and the applied size is logged on each screen.
 
-### v2.3 — Chris Titus Tech WinUtil (option 15)
+### v2.3 — Chris Titus Tech WinUtil (option 15 then; option 24 now)
 - Step-by-step setup: creates `Documents\PowerShell`, downloads `winutil.ps1` (pinned 26.08.04 or latest), execution-policy check, `winget install --id ChrisTitusTech.winutil`, and launch via `irm christitus.com/win | iex`.
 
 ### v2.2 — Connectivity & Devices
@@ -189,11 +230,37 @@ Follow this checklist for every new version (e.g. `v2.5.0`):
 
 ## Contributing
 
-See [CONTRIBUTING.md](CONTRIBUTING.md) for the development setup, testing checklist, and code style conventions.
+Contributions are licensed under **GPL-3.0**. See [CONTRIBUTING.md](CONTRIBUTING.md) for the development setup, the testing checklist (border fit, word wrap, Dracula colors, options 0-25), and the code style rules.
+
+- Guide: [CONTRIBUTING.md](CONTRIBUTING.md)
+- Repository: [https://github.com/sanguirIS/WinUtilKLENN#](https://github.com/sanguirIS/WinUtilKLENN#)
 
 ## License
 
-WinUtilKLENN is released under the **GNU General Public License v3.0** (GPL-3.0) — see [LICENSE](LICENSE).
+WinUtilKLENN is released under the **GNU General Public License v3.0** (GPL-3.0).
+
+- Full text: [LICENSE](LICENSE)
+- GPL-3.0: [https://www.gnu.org/licenses/gpl-3.0.html](https://www.gnu.org/licenses/gpl-3.0.html)
+- Third-party licenses: [THIRD_PARTY_LICENSES.md](THIRD_PARTY_LICENSES.md)
+
+There is no warranty. The menu and the exit screen say so, as the GPL requires for an interactive program.
+
+## Releases
+
+Published GitHub releases: **6**. Latest published tag: **[v2.8.0](https://github.com/sanguirIS/WinUtilKLENN/releases/tag/v2.8.0)**.
+
+All releases: [https://github.com/sanguirIS/WinUtilKLENN/releases](https://github.com/sanguirIS/WinUtilKLENN/releases)
+
+| Release | Published | Notes |
+|---|---|---|
+| [v2.8.0](https://github.com/sanguirIS/WinUtilKLENN/releases/tag/v2.8.0) **Latest** | 2026-08-18 | Selective winget upgrades and bug fixes |
+| [v2.7.1](https://github.com/sanguirIS/WinUtilKLENN/releases/tag/v2.7.1) | 2026-08-14 | Update-check and npm install fixes |
+| [v2.5.0](https://github.com/sanguirIS/WinUtilKLENN/releases/tag/v2.5.0) | 2026-08-09 | Polish pass (BITS label, log spacing) |
+| [v2.4.3](https://github.com/sanguirIS/WinUtilKLENN/releases/tag/v2.4.3) | 2026-08-09 | Buffer height matched the window |
+| [v2.4.2](https://github.com/sanguirIS/WinUtilKLENN/releases/tag/v2.4.2) | 2026-08-09 | Window height cap raised to 50 rows |
+| [v2.4.1](https://github.com/sanguirIS/WinUtilKLENN/releases/tag/v2.4.1) | 2026-08-09 | GPL header, warranty notice, resize fixes |
+
+v2.6.0 and v2.7.0 were source milestones and were not published as GitHub releases. The source tree may be ahead of v2.8.0; see the [Changelog](#changelog).
 
 ## Author
 

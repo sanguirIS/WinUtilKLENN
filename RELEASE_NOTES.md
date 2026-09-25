@@ -1,66 +1,56 @@
-# WinUtilKLENN v2.7.1
+# WinUtilKLENN v2.9.0
 
-Diagnostics and guided repair tools for Windows 10 / 11 — a single-file batch
-utility, no installation required.
+Diagnostics and guided repair tools for Windows 10 / 11. Single-file batch
+utility, no installation required. Licensed under GPL-3.0.
+
+This file describes the current source. The latest **published** GitHub
+release is still [v2.8.0](https://github.com/sanguirIS/WinUtilKLENN/releases/tag/v2.8.0).
+All six published releases: https://github.com/sanguirIS/WinUtilKLENN/releases
+
+## What's new in v2.9.0
+
+- **Dracula theme** on every screen: truecolor, a remapped console palette,
+  and terminal background/foreground sequences.
+- **Responsive boxes and word wrap.** Borders follow the console (up to 120
+  columns, never wider than the window). Prose wraps inside the box. Tables
+  wrap to the same width.
+- **Automated text size.** Startup picks a readable font and a window that
+  fits the screen (about 72-104 columns, up to 50 rows). A very narrow or
+  very wide window refits the font. Scrollback stays at 2,000 rows.
+- **Security check** remains option 25 (Defender, firewall, UAC, optional
+  quick scan).
+- **Selective winget upgrades** (option 16): all packages, or chosen
+  Ids/Names. A failed `winget upgrade --all` is NOT FIXED.
+- Elevation survives spaces and apostrophes and keeps the working folder.
+- winget negative exit codes are not treated as success. Node.js install
+  success is checked by finding `npm`, then the requested package installs.
+- PATH refresh reads expanded values. Disk cleanup uses `$env:TEMP`.
+- Windows Update cache reset waits for services to stop, checks the renames,
+  and always starts the services again.
+- Update check uses this script's version and ignores pre-release suffixes.
+- yoinks checks for Windows Terminal before option 2. Option 1 waits until
+  the command window closes.
+- Printer repair clears stuck jobs in the spool folder after the spooler
+  stops, then starts the spooler again.
+- Invalid menu input is reduced to digits and shown, never executed.
+- License remains **GPL-3.0**.
+
+## What's new in v2.8.0
+
+Published release: https://github.com/sanguirIS/WinUtilKLENN/releases/tag/v2.8.0
+
+- Option 16 can upgrade all winget packages or a typed list of Ids/Names.
+- Fixes for winget failure codes, PATH refresh, disk-cleanup apostrophes,
+  the update-check user-agent, and the yoinks Windows Terminal check.
 
 ## What's new in v2.7.1
 
-- **Improved version comparison**: Fixed update check to properly handle all version number formats
-- **Better npm tool error handling**: Added comprehensive logging for Node.js and npm package installations
-- **Enhanced GitHub API compatibility**: Updated user-agent string for more reliable update checks
-- **Robust cancellation handling**: Better user experience when cancelling installations
+- Update check handles more version-number formats.
+- Better logging when a Node.js or npm install is cancelled.
+- GitHub API user-agent updated for more reliable update checks.
 
-## What's new in v2.7.0
+## Earlier
 
-- **winget Upgrade** (16): lists all outdated winget apps and upgrades them in
-  one go, with a FIXED / NOT FIXED verdict and a pending-reboot check.
-- **yoinks** (17): download videos from YouTube, X, Instagram, TikTok and
-  1,800+ other sites straight from the terminal.
-- **ghgrab** (18): browse and download files, folders or release assets from
-  any GitHub repo — no cloning needed.
-- **Freebuff - AI Agent** (19): launches the free AI coding agent CLI from
-  freebuff.com.
-- **Auto-installing npm tools:** options 17–19 check whether their npm tool is
-  installed; if not, they ask **Y/N**, install it with `npm install -g`, and
-  launch it directly. If npm / Node.js is missing, the script offers to install
-  Node.js LTS via winget first.
-- Menu renumbered sequentially to 1–24 + Exit.
-
-## What's new in v2.6.0
-
-- **Check for Updates**: compares the installed version with the latest GitHub
-  release (semantic version comparison) and offers to open the release page.
-- **MAINTENANCE section**: Disk Cleanup (12), Restore Point (13), Battery
-  Report (14) and Restart / Shutdown (15).
-- **Clear verdicts**: every repair option ends with a `[ FIXED ]` / `[ NOT
-  FIXED ]` verdict and an explicit restart hint.
-- The version now lives in one `VERSION` variable that drives the menu badge
-  and the update check.
-- `WINUTIL_TEST=1` test mode that skips the UAC prompt for smoke tests.
-
-## What it does
-
-24 guided menu options: Audio · Video Playback · Windows Media Player · Network &
-Internet · DNS Flush · Bluetooth · Printer · Camera · Graphics Driver Reset ·
-Windows Update · BITS · Disk Cleanup · Restore Point · Battery Report · Restart /
-Shutdown · winget Upgrade · Yoinks · ghgrab · Freebuff · Program Compatibility ·
-Complete Diagnostics · System Summary · Check for Updates · Chris Titus Tech
-WinUtil integration.
-
-## Run
-
-```bat
-WinUtilKLENN.cmd
-```
-
-Run as Administrator (the script self-elevates via UAC).
-Logs to `%ProgramData%\WinUtilKLENN\WinUtilKLENN.log`.
-
-## License
-
-GPL-3.0 — see [LICENSE](LICENSE).
-Third-party licenses (WinUtil, PowerShell): [THIRD_PARTY_LICENSES.md](THIRD_PARTY_LICENSES.md).
-
----
-
-*By [sanguirIS](https://github.com/sanguirIS)*
+v2.7.0 added winget upgrade, yoinks, ghgrab, and freebuff. v2.6.0 added the
+update check, maintenance options, and FIXED / NOT FIXED verdicts. See
+README.md Changelog for the full history.
